@@ -1,3 +1,5 @@
+const mongoose = require("mongoose");
+
 const blogItemSchema = mongoose.Schema({
   imageUrl: String,
   date: Date,

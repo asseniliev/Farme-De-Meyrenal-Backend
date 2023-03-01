@@ -1,4 +1,5 @@
 import addressSchema from "./address";
+const mongoose = require("mongoose");
 
 const marketAddressSchema = mongoose.Schema({
   address: addressSchema,
