@@ -1,18 +1,16 @@
-// const addressSchema = mongoose.Schema({
-//   lat: Number,
-//   lon: Number,
-//   address: String,
-// });
-
-import addressSchema from "./address";
+const addressSchema = require("./address");
+const mongoose = require("mongoose");
 
 const userSchema = mongoose.Schema({
   email: String,
   password: String,
   firstName: String,
   lastName: String,
+  phoneNumber: String,
   deliveryAddress: addressSchema,
-  shoppingCart: { type: mongoose.Schema.Types.ObjectId, ref: "shoppingcarts" },
+  shoppingcart: { type: mongoose.Schema.Types.ObjectId, ref: "shoppingcarts" },
+  controlCode: String,
+  isAdmin: Boolean,
 });
 
 const User = mongoose.model("users", userSchema);

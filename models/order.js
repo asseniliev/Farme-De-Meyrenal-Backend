@@ -1,4 +1,5 @@
 import shoppingcartSchema from "./shoppingcart";
+const mongoose = require("mongoose");
 
 const orderSchema = mongoose.Schema({
   date: Date,
