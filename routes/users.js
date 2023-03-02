@@ -7,8 +7,8 @@ const bcrypt = require("bcrypt");
 
 const { deleteAllItems } = require("../routes/shoppingcarts");
 /* GET users listing. */
-router.get("/:id", function (req, res, next) {
-  const result = deleteAllItems(req.params.id);
+router.get("/:id", async (req, res, next) => {
+  const result = await deleteAllItems(req.params.id);
   res.json({ result: result });
   //res.json({ result: true });
 });
