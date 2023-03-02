@@ -50,9 +50,7 @@ router.put("/:id", async (req, res) => {
     }
   );
 
-  const updatedProduct = Product.findById(req.params.id);
-
-  if (updatedProduct.matchedCount > 0) {
+  if (productToUpdate.matchedCount > 0) {
     res.json({ result: true });
   } else {
     res.json({
