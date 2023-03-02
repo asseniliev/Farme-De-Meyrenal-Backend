@@ -9,8 +9,9 @@ var logger = require("morgan");
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 var productsRouter = require("./routes/products");
-var shoppingcartsRouter = require("./routes/shoppingcarts.js");
-var orderRouter = require("./routes/orders");
+
+var { router: shoppingcartsRouter } = require("./routes/shoppingcarts.js");
+var ordersRouter = require("./routes/orders");
 
 var app = express();
 const cors = require("cors");
@@ -25,7 +26,8 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/products", productsRouter);
+
 app.use("/shoppingcarts", shoppingcartsRouter);
-app.use("/orders", orderRouter);
+app.use("/orders", ordersRouter);
 
 module.exports = app;
