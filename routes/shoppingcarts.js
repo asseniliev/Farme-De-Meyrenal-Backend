@@ -5,7 +5,6 @@ var { Shoppingcart } = require("../models/shoppingcart");
 var Product = require("../models/product");
 
 router.put("/:id", async (req, res) => {
-  //console.log("Product id = " + req.body.productId);
   const product = await Product.findById(req.body.productId);
   const shoppingcart = await Shoppingcart.findById(req.params.id);
 
@@ -41,10 +40,13 @@ router.put("/:id", async (req, res) => {
     totalAmount += item.itemTotal;
   }
 
-  const cartToUpdate = await Shoppingcart.updateOne({
-    items: shoppingcart.items,
-    totalAmount: totalAmount,
-  });
+  const cartToUpdate = await Shoppingcart.updateOne(
+    { _id: req.params.id },
+    {
+      items: shoppingcart.items,
+      totalAmount: totalAmount,
+    }
+  );
 
   const updatedShoppingcart = await Shoppingcart.findById(req.params.id);
 
@@ -58,8 +60,25 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-function deleteAllItems() {
-  console.log("Delete all items is called");
+async function deleteAllItems(cartId) {
+  console.log("cartId = " + cartId);
+
+  const cartToUpdate = await Shoppingcart.updateOne(
+    { _id: cartId },
+    {
+      items: [],
+      totalAmount: 0,
+    }
+  );
+
+  if (cartToUpdate.matchedCount > 0) {
+    return { result: true };
+  } else {
+    return {
+      result: false,
+      message: "Something went wrong. Shopping cart was not nulled",
+    };
+  }
 }
 
 module.exports = { router, deleteAllItems };

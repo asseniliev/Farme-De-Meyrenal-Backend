@@ -3,13 +3,14 @@ var router = express.Router();
 
 const User = require("../models/user");
 const { Shoppingcart } = require("../models/shoppingcart");
-const { deleteAllItems } = require("../routes/shoppingcarts");
 const bcrypt = require("bcrypt");
 
+const { deleteAllItems } = require("../routes/shoppingcarts");
 /* GET users listing. */
-router.get("/", function (req, res, next) {
-  deleteAllItems();
-  res.json({ result: true });
+router.get("/:id", function (req, res, next) {
+  const result = deleteAllItems(req.params.id);
+  res.json({ result: result });
+  //res.json({ result: true });
 });
 
 //Create new user
