@@ -6,25 +6,49 @@ var Product = require("../models/product");
 
 router.put("/:id", async (req, res) => {
   const product = await Product.findById(req.body.productId);
+  const shoppingcart = await Shoppingcart.findById(req.params.id);
 
-  const newItem = {
+  let totalAmount = 0;
+
+  const item = {
     product: req.body.productId,
     quantity: req.body.quantity,
     itemTotal: (req.body.quantity * product.price) / product.unitScale,
   };
 
-  const shoppingcart = await Shoppingcart.findById(req.params.id);
-  const totalAmount = shoppingcart.totalAmount + newItem.itemTotal;
+  //Here I am using "==" and not "===" because the e.product
+  //is of type "new ObjectId("64005898238589307d3087bc") and
+  //not string. Therefore, the tripple equality will not work.
+  const productIndex = shoppingcart.items.findIndex(
+    (e) => e.product == req.body.productId
+  );
 
-  shoppingcart.items.push(newItem);
+  if (productIndex < 0) {
+    shoppingcart.items.push(item);
+  } else {
+    if (req.body.quantity == 0) {
+      //if quuantity is 0, we remove the item from the shopping cart
+      console.log("Remove item at index " + productIndex);
+      shoppingcart.items.splice(productIndex, 1);
+    } else {
+      shoppingcart.items[productIndex].quantity = item.quantity;
+      shoppingcart.items[productIndex].itemTotal = item.itemTotal;
+    }
+  }
 
-  const updatedCart = await Shoppingcart.updateOne({
+  for (const item of shoppingcart.items) {
+    totalAmount += item.itemTotal;
+  }
+
+  const cartToUpdate = await Shoppingcart.updateOne({
     items: shoppingcart.items,
     totalAmount: totalAmount,
   });
 
-  if (updatedCart.matchedCount > 0) {
-    res.json({ result: true, shippingcart: shoppingcart });
+  const updatedShoppingcart = await Shoppingcart.findById(req.params.id);
+
+  if (cartToUpdate.matchedCount > 0) {
+    res.json({ result: true, shippingcart: updatedShoppingcart });
   } else {
     res.json({
       result: false,
