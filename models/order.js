@@ -1,10 +1,12 @@
-import shoppingcartSchema from "./shoppingcart";
+const {shoppingcartSchema} = require ("./shoppingcart");
 const mongoose = require("mongoose");
 
 const orderSchema = mongoose.Schema({
   date: Date,
-  content: shoppingcartSchema,
-  status: String,
+  items: [],
+  totalAmount: Number,
+  status: String, // created / confirmed / delivred / 
+  isPaid: Boolean,
   isCancelled: Boolean,
 });
 
