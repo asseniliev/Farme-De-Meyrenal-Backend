@@ -1,10 +1,13 @@
 require("dotenv").config();
 require("./models/connection");
 
+var fileUpload = require("express-fileupload");
+
 var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
+const cors = require("cors");
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
@@ -14,9 +17,9 @@ var { router: shoppingcartsRouter } = require("./routes/shoppingcarts.js");
 var ordersRouter = require("./routes/orders");
 
 var app = express();
-const cors = require("cors");
+app.use(express.json());
 app.use(cors());
-
+app.use(fileUpload());
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

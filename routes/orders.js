@@ -1,8 +1,7 @@
 var express = require("express");
 var router = express.Router();
-const { ObjectId } = require('mongodb');
+const { ObjectId } = require("mongodb");
 const Order = require("../models/order");
-
 
 //User create new order
 router.post("/", async (req, res) => {
@@ -17,7 +16,10 @@ router.post("/", async (req, res) => {
   });
   const createdOrder = await newOrder.save();
 
-  if (createdOrder.items.length === newOrder.items.length && createdOrder.totalAmount === newOrder.totalAmount) {
+  if (
+    createdOrder.items.length === newOrder.items.length &&
+    createdOrder.totalAmount === newOrder.totalAmount
+  ) {
     res.json({
       result: true,
       message: "Order created",
@@ -32,14 +34,13 @@ router.post("/", async (req, res) => {
 
 //Search order by ID
 router.get("/all/:id", async (req, res) => {
-  const result = await Order.findById(req.params.id)
+  const result = await Order.findById(req.params.id);
   res.json({ result: result });
-})
+});
 
 //Filter orders (by users, by delivery region, by status)
 // Exemple por tester route: http://localhost:3000/orders/filter?city=Bron&id=1234567890
 router.get("/filter", async (req, res) => {
-
   const id = req.query.userId;
   const city = req.query.deliveryPlace;
   const status = req.query.status;
@@ -48,16 +49,12 @@ router.get("/filter", async (req, res) => {
     $and: [
       id ? { _id: ObjectId(id) } : {},
       city ? { "deliveryAddress.city": city } : {},
-      status ? {status} : {},
-    ]
-  }).populate('users');
-  console.log(result)
+      status ? { status } : {},
+    ],
+  }).populate("users");
+  console.log(result);
   //res.json({ result: result });
-  res.json({ result: true })
-})
-
-
-
-
+  res.json({ result: true });
+});
 
 module.exports = router;
