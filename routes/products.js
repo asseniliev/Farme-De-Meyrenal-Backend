@@ -60,4 +60,9 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+//Retrieve list of all available products for purchase
+router.get("/", async (req, res) => {
+  const result = await Product.find({isActive: true})
+  res.json({ result: result });
+})
 module.exports = router;

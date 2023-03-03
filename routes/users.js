@@ -6,11 +6,11 @@ const { Shoppingcart } = require("../models/shoppingcart");
 const bcrypt = require("bcrypt");
 
 const { deleteAllItems } = require("../routes/shoppingcarts");
+
 /* GET users listing. */
 router.get("/:id", async (req, res, next) => {
   const result = await deleteAllItems(req.params.id);
   res.json({ result: result });
-  //res.json({ result: true });
 });
 
 //Create new user

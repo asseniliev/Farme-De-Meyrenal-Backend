@@ -2,6 +2,7 @@ const {shoppingcartSchema} = require ("./shoppingcart");
 const mongoose = require("mongoose");
 
 const orderSchema = mongoose.Schema({
+  users: { type: mongoose.Schema.Types.ObjectId, ref: 'users' },
   date: Date,
   items: [],
   totalAmount: Number,
