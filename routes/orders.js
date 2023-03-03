@@ -1,13 +1,13 @@
 var express = require("express");
 var router = express.Router();
-const { ObjectId } = require('mongodb');
+const { ObjectId } = require("mongodb");
 const Order = require("../models/order");
-
 
 //User create new order
 router.post("/", async (req, res) => {
   const newOrder = new Order({
-    users: req.body.id,
+    user: req.body.id,
+    city: req.body.city,
     date: Date.now(),
     items: req.body.items,
     totalAmount: req.body.totalAmount,
@@ -15,49 +15,64 @@ router.post("/", async (req, res) => {
     isPaid: false,
     isCancelled: false,
   });
-  const createdOrder = await newOrder.save();
+  try {
+    const createdOrder = await newOrder.save();
 
-  if (createdOrder.items.length === newOrder.items.length && createdOrder.totalAmount === newOrder.totalAmount) {
-    res.json({
-      result: true,
-      message: "Order created",
-    });
-  } else {
-    res.json({
-      result: false,
-      message: "Something went wrong. Order not created",
-    });
+    if (
+      createdOrder.items.length === newOrder.items.length &&
+      createdOrder.totalAmount === newOrder.totalAmount
+    ) {
+      res.json({
+        result: true,
+        message: "Order created",
+      });
+    } else {
+      res.json({
+        result: false,
+        message: "Something went wrong. Order not created",
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
   }
 });
 
 //Search order by ID
-router.get("/all/:id", async (req, res) => {
-  const result = await Order.findById(req.params.id)
-  res.json({ result: result });
-})
+router.get("/findOne/:id", async (req, res) => {
+  try {
+    const result = await Order.findById(req.params.id);
+    res.json({ result: result });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
 
 //Filter orders (by users, by delivery region, by status)
-// Exemple por tester route: http://localhost:3000/orders/filter?city=Bron&id=1234567890
+// Exemple por tester route: localhost:3000/orders/filter?userId=63ff2c235a4f4ccacaf25fad&status=confirmed&deliveryPlace=Bron
+// 
 router.get("/filter", async (req, res) => {
-
-  const id = req.query.userId;
+  const userId = req.query.userId;
   const city = req.query.deliveryPlace;
   const status = req.query.status;
 
-  const result = await Order.find({
+  const filter = {
     $and: [
-      id ? { _id: ObjectId(id) } : {},
-      city ? { "deliveryAddress.city": city } : {},
-      status ? {status} : {},
-    ]
-  }).populate('users');
-  console.log(result)
-  //res.json({ result: result });
-  res.json({ result: true })
-})
-
-
-
-
+      userId ? { user: userId } : {},
+      city ? { city } : {},
+      status ? { status } : {},
+    ],
+  };
+  try {
+    const result = await Order.find(filter);
+    if(result.length === 0) res.json({ result: false, message: 'No orders match your search.'})
+    else res.json({ result: result });
+    
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
 
 module.exports = router;

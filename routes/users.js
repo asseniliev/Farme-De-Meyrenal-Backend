@@ -7,111 +7,169 @@ const bcrypt = require("bcrypt");
 
 const { deleteAllItems } = require("../routes/shoppingcarts");
 
+//Provide list of all users
+router.get("/", async (req, res, next) => {
+  try {
+    const result = await User.find();
+    res.json({ result: result });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 /* GET users listing. */
-router.get("/:id", async (req, res, next) => {
-  const result = await deleteAllItems(req.params.id);
-  res.json({ result: result });
+router.get("/deleteAllItems", async (req, res, next) => {
+  try {
+    const result = await deleteAllItems(req.params.id);
+    console.log(result);
+    res.json({ result: result });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
 });
 
 //Create new user
 router.post("/signup", async (req, res) => {
-  const existingUser = await User.findOne({ email: req.body.email });
+  try {
+    const existingUser = await User.findOne({ email: req.body.email });
 
-  if (existingUser === null) {
-    const newShoppingcart = new Shoppingcart({
-      items: [],
-      totalAmount: 0,
-    });
-
-    const createdShoppingcart = await newShoppingcart.save();
-
-    const random = Math.floor(Math.random() * 1e6);
-
-    const newUser = new User({
-      email: req.body.email,
-      password: bcrypt.hashSync(req.body.password, 10),
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      phoneNumber: req.body.phoneNumber,
-      deliveryAddress: req.body.deliveryAddress,
-      shoppingcart: createdShoppingcart._id,
-      controlCode: random.toString(),
-      isAdmin: false,
-    });
-
-    const createdUser = await newUser.save();
-
-    if (createdUser.email === newUser.email) {
-      res.json({
-        result: true,
-        user: createdUser,
-        shoppingcart: createdShoppingcart,
+    if (existingUser === null) {
+      const newShoppingcart = new Shoppingcart({
+        items: [],
+        totalAmount: 0,
       });
+
+      const createdShoppingcart = await newShoppingcart.save();
+
+      const random = Math.floor(Math.random() * 1e6);
+
+      const newUser = new User({
+        email: req.body.email,
+        password: bcrypt.hashSync(req.body.password, 10),
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        phoneNumber: req.body.phoneNumber,
+        deliveryAddress: req.body.deliveryAddress,
+        shoppingcart: createdShoppingcart._id,
+        controlCode: random.toString(),
+        isAdmin: false,
+      });
+
+      const createdUser = await newUser.save();
+
+      if (createdUser.email === newUser.email) {
+        res.json({
+          result: true,
+          user: createdUser,
+          shoppingcart: createdShoppingcart,
+        });
+      } else {
+        res.json({
+          result: false,
+          message: "Something went wrong. User was not created",
+        });
+      }
     } else {
       res.json({
         result: false,
-        message: "Something went wrong. User was not created",
+        error: "User with this email already registered",
       });
     }
-  } else {
-    res.json({
-      result: false,
-      error: "User with this email already registered",
-    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
   }
 });
 
 //Login existing user
 router.post("/signin", async (req, res) => {
-  const user = await User.findOne({ email: req.body.email });
-  let logUser = false;
-  if (user) {
-    if (bcrypt.compareSync(req.body.password, user.password)) logUser = true;
-  }
-  if (logUser) {
-    res.json({ result: true });
-  } else {
-    res.json({ result: false, message: "Username or password not correct" });
+  try {
+    const user = await User.findOne({ email: req.body.email });
+    let logUser = false;
+    if (user) {
+      if (bcrypt.compareSync(req.body.password, user.password)) logUser = true;
+    }
+    if (logUser) {
+      res.json({ result: true });
+    } else {
+      res.json({ result: false, message: "Username or password not correct" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
   }
 });
 
 //Modify existing user by id
 router.put("/:id", async (req, res) => {
-  const userToUpdate = await User.updateOne(
-    { _id: req.params.id },
-    {
-      password: bcrypt.hashSync(req.body.password, 10),
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      phoneNumber: req.body.phoneNumber,
-      deliveryAddress: req.body.deliveryAddress,
+  try {
+    const userToUpdate = await User.updateOne(
+      { _id: req.params.id },
+      {
+        password: bcrypt.hashSync(req.body.password, 10),
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        phoneNumber: req.body.phoneNumber,
+        deliveryAddress: req.body.deliveryAddress,
+      }
+    );
+
+    const updatedUser = await User.findById(req.params.id);
+
+    if (updatedUser.matchedCount > 0) {
+      res.json({ result: true, user: updatedUser });
+    } else {
+      res.json({
+        result: false,
+        message: "Something went wrong. User was not updated!",
+      });
     }
-  );
-
-  const updatedUser = await User.findById(req.params.id);
-
-  if (updatedUser.matchedCount > 0) {
-    res.json({ result: true, user: updatedUser });
-  } else {
-    res.json({
-      result: false,
-      message: "Something went wrong. User was not updated!",
-    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
   }
 });
 
 //Delete user (by putting its password to black)
 router.delete("/:id", async (req, res) => {
-  await User.updateOne({ _id: req.params.id }, { password: "" });
-  const deletedUser = await User.findOne({ _id: req.params.id });
-  if (deletedUser.password === "") {
-    res.json({ result: true });
-  } else {
-    res.json({
-      result: false,
-      message: "Something went wrong. User was not supressed",
-    });
+  try {
+    await User.updateOne({ _id: req.params.id }, { password: "" });
+    const deletedUser = await User.findOne({ _id: req.params.id });
+    if (deletedUser.password === "") {
+      res.json({ result: true });
+    } else {
+      res.json({
+        result: false,
+        message: "Something went wrong. User was not supressed",
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
   }
 });
 
+//Filter users by inactive
+router.get("/inactive", async (req, res) => {
+  try {
+    const users = await User.find({ password: "" });
+    res.json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+//Filter users by active
+router.get("/active", async (req, res) => {
+  try {
+    const users = await User.find({ password: { $ne: "" } });
+    res.json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
 module.exports = router;
