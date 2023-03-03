@@ -3,9 +3,11 @@ var router = express.Router();
 const { ObjectId } = require('mongodb');
 const Order = require("../models/order");
 
+
 //User create new order
 router.post("/", async (req, res) => {
   const newOrder = new Order({
+    users: req.body.id,
     date: Date.now(),
     items: req.body.items,
     totalAmount: req.body.totalAmount,
