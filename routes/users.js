@@ -2,12 +2,14 @@ var express = require("express");
 var router = express.Router();
 
 const User = require("../models/user");
+const Signup = require("../models/signups");
 const { Shoppingcart } = require("../models/shoppingcart");
 const bcrypt = require("bcrypt");
 
 const { deleteAllItems } = require("../routes/shoppingcarts");
 
 /* GET users listing. */
+
 router.get("/:id", async (req, res, next) => {
   const result = await deleteAllItems(req.params.id);
   res.json({ result: result });
@@ -26,22 +28,28 @@ router.post("/signup", async (req, res) => {
     const createdShoppingcart = await newShoppingcart.save();
 
     const random = Math.floor(Math.random() * 1e6);
+    const cryptedPassword = bcrypt.hashSync(req.body.password, 10);
 
     const newUser = new User({
       email: req.body.email,
-      password: bcrypt.hashSync(req.body.password, 10),
+      password: "",
       firstName: req.body.firstName,
       lastName: req.body.lastName,
       phoneNumber: req.body.phoneNumber,
       deliveryAddress: req.body.deliveryAddress,
       shoppingcart: createdShoppingcart._id,
-      controlCode: random.toString(),
       isAdmin: false,
     });
 
     const createdUser = await newUser.save();
 
-    if (createdUser.email === newUser.email) {
+    const isSignupFilled = await populateSignup(
+      createdUser._id,
+      cryptedPassword,
+      random
+    );
+
+    if (createdUser.email === newUser.email && isSignupFilled) {
       res.json({
         result: true,
         user: createdUser,
@@ -57,6 +65,37 @@ router.post("/signup", async (req, res) => {
     res.json({
       result: false,
       error: "User with this email already registered",
+    });
+  }
+});
+
+router.post("/afirm", async (req, res) => {
+  const user = await User.findOne({ email: req.query.email });
+  let isAfirmed = false;
+  let password = "";
+
+  if (user) {
+    const signup = await Signup.findOne({
+      userId: user._id,
+      controlCode: req.query.controlCode,
+    });
+
+    if (signup) {
+      password = signup.password;
+      isAfirmed = true;
+    }
+  }
+
+  if (isAfirmed) {
+    await Signup.deleteOne({ userId: user._id });
+    await User.updateOne({ _id: user._id }, { password: password });
+    res.json({
+      result: true,
+    });
+  } else {
+    res.json({
+      result: false,
+      message: `Invalid signup confirmation request`,
     });
   }
 });
@@ -113,5 +152,21 @@ router.delete("/:id", async (req, res) => {
     });
   }
 });
+
+async function populateSignup(userId, password, controlColde) {
+  const newSignup = new Signup({
+    userId: userId,
+    password: password,
+    controlCode: controlColde,
+  });
+
+  const createdSignup = await newSignup.save();
+
+  if (createdSignup.userId === userId) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 module.exports = router;

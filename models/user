@@ -9,7 +9,6 @@ const userSchema = mongoose.Schema({
   phoneNumber: String,
   deliveryAddress: addressSchema,
   shoppingcart: { type: mongoose.Schema.Types.ObjectId, ref: "shoppingcarts" },
-  controlCode: String,
   isAdmin: Boolean,
 });
 
