@@ -1,7 +1,12 @@
 var express = require("express");
 var router = express.Router();
+const jwt = require("jsonwebtoken");
 
 var Product = require("../models/product");
+var uniqid = require("uniqid");
+
+const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
 
 router.post("/", async (req, res) => {
   try {
@@ -71,12 +76,7 @@ router.put("/:id", async (req, res) => {
 
 //Retrieve list of all available products for purchase
 router.get("/", async (req, res) => {
-  try {
-    const result = await Product.find({ isActive: true });
-    res.json({ result: result });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
-  }
-});
+  const result = await Product.find({ isActive: true })
+  res.json({ result: result });
+})
 module.exports = router;

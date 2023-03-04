@@ -66,9 +66,9 @@ router.get("/filter", async (req, res) => {
   };
   try {
     const result = await Order.find(filter);
-    if(result.length === 0) res.json({ result: false, message: 'No orders match your search.'})
+    if (result.length === 0) res.json({ result: false, message: 'No orders match your search.' })
     else res.json({ result: result });
-    
+
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
