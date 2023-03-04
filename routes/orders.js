@@ -48,7 +48,7 @@ router.get("/findOne/:id", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
-
+//
 //Filter orders (by users, by delivery region, by status)
 // Exemple por tester route: localhost:3000/orders/filter?userId=63ff2c235a4f4ccacaf25fad&status=confirmed&deliveryPlace=Bron
 // 
