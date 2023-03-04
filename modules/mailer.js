@@ -5,22 +5,22 @@ async function sendMail(receiverMail, mailTitle, mailText) {
   const { google } = require("googleapis");
   const OAuth2 = google.auth.OAuth2;
 
-  const EMAIL = "assen1.iliev1@gmail.com";
-  const REFRESH_TOKEN =
-    "1//04kcOV39-gGhTCgYIARAAGAQSNwF-L9IrPtlxgDkDvAccyvf_d3tlpi9bnHA6bBPImf_n4Ve8DvOQ7DRxQmWzc4dfqesjle9unbo";
-  const CLIENT_SECRET = "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";
-  const CLIENT_ID =
-    "653361233410-cu4g3crv0kb1m85l8mu2l00koumaclef.apps.googleusercontent.com";
+  // const EMAIL = "assen1.iliev1@gmail.com";
+  // const REFRESH_TOKEN =
+  //   "1//04kcOV39-gGhTCgYIARAAGAQSNwF-L9IrPtlxgDkDvAccyvf_d3tlpi9bnHA6bBPImf_n4Ve8DvOQ7DRxQmWzc4dfqesjle9unbo";
+  // const CLIENT_SECRET = "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";
+  // const CLIENT_ID =
+  //   "653361233410-cu4g3crv0kb1m85l8mu2l00koumaclef.apps.googleusercontent.com";
 
   const createTransporter = async () => {
     const oauth2Client = new OAuth2(
-      CLIENT_ID,
-      CLIENT_SECRET,
+      process.env.CLIENT_ID,
+      process.env.CLIENT_SECRET,
       "https://developers.google.com/oauthplayground"
     );
 
     oauth2Client.setCredentials({
-      refresh_token: REFRESH_TOKEN,
+      refresh_token: process.env.REFRESH_TOKEN,
     });
 
     const accessToken = await new Promise((resolve, reject) => {
@@ -36,11 +36,11 @@ async function sendMail(receiverMail, mailTitle, mailText) {
       service: "gmail",
       auth: {
         type: "OAuth2",
-        user: EMAIL,
+        user: process.env.EMAIL,
         accessToken,
-        clientId: CLIENT_ID,
-        clientSecret: CLIENT_SECRET,
-        refreshToken: REFRESH_TOKEN,
+        clientId: process.env.CLIENT_ID,
+        clientSecret: process.env.CLIENT_SECRET,
+        refreshToken: process.env.REFRESH_TOKEN,
       },
     });
 
@@ -57,7 +57,7 @@ async function sendMail(receiverMail, mailTitle, mailText) {
     subject: mailTitle,
     text: mailText,
     to: receiverMail,
-    from: EMAIL,
+    from: process.env.EMAIL,
   });
 
   console.log("Mail sent");
