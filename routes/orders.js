@@ -37,7 +37,7 @@ router.get("/all/:id", async (req, res) => {
   const result = await Order.findById(req.params.id);
   res.json({ result: result });
 });
-
+//
 //Filter orders (by users, by delivery region, by status)
 // Exemple por tester route: http://localhost:3000/orders/filter?city=Bron&id=1234567890
 router.get("/filter", async (req, res) => {

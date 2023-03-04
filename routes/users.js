@@ -133,7 +133,7 @@ router.post("/signin", async (req, res) => {
   }
 });
 
-//Modify existing user by id
+//Modify existing user by id/
 router.put("/:id", async (req, res) => {
   const userToUpdate = await User.updateOne(
     { _id: req.params.id },
