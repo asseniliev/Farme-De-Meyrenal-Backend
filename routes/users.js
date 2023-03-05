@@ -129,6 +129,9 @@ router.get("/afirm", async (req, res) => {
 
 //Login existing user
 router.post("/signin", async (req, res) => {
+  //incoming data:
+  //req.body.email,
+  //req.body.password, 
   const user = await User.findOne({ email: req.body.email });
   let logUser = false;
   if (user) {
@@ -139,7 +142,6 @@ router.post("/signin", async (req, res) => {
   if (logUser) {
     const user = {
       email: req.body.email,
-      password: req.body.password,
     };
 
     const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET);
