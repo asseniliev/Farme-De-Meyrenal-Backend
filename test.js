@@ -1,4 +1,4 @@
-var sendMail = require("./modules/mailer");
+var sendMail = require("./modules/mailerSimplified");
 
 const receiver = "assen.s.iliev@gmail.com";
 

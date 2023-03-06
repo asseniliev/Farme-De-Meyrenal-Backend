@@ -1,5 +1,5 @@
 var express = require("express");
-var sendMail = require("../modules/mailer");
+var sendMail = require("../modules/mailerSimplified");
 var router = express.Router();
 
 const User = require("../models/user");
