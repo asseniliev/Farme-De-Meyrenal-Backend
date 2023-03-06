@@ -43,21 +43,24 @@ router.get("/contours", async (req, res) => {
 
   const latInit = (latMin + latMax) / 2;
   const lonInit = (lonMin + lonMax) / 2;
-  console.log("latInit = " + latInit);
-  console.log("lonInit = " + lonInit);
+  // console.log("latInit = " + latInit);
+  // console.log("lonInit = " + lonInit);
 
   res.json({ polygonCoords });
 });
 
 router.get("/addresses", async (req, res) => {
-  console.log("Lon = " + req.query.lon);
+  //console.log("Lon = " + req.query.lon);
   const addresses = await (
     await fetch(
       `https://api-adresse.data.gouv.fr/reverse/?lon=${req.query.lon}&lat=${req.query.lat}`
     )
   ).json();
 
-  res.json({ address: addresses.features[0].properties.label });
+  res.json({
+    address: addresses.features[0].properties.label,
+    city: addresses.features[0].properties.city,
+  });
 });
 
 module.exports = router;

@@ -36,7 +36,7 @@ router.get("/deleteAllItems", async (req, res, next) => {
 //Create new user
 router.post("/signup", async (req, res) => {
   const existingUser = await User.findOne({ email: req.body.email });
-
+  console.log(req.body);
   if (existingUser === null) {
     const newShoppingcart = new Shoppingcart({
       items: [],
@@ -131,7 +131,7 @@ router.get("/afirm", async (req, res) => {
 router.post("/signin", async (req, res) => {
   //incoming data:
   //req.body.email,
-  //req.body.password, 
+  //req.body.password,
   const user = await User.findOne({ email: req.body.email });
   let logUser = false;
   if (user) {
@@ -253,16 +253,16 @@ router.post("/contact", async (req, res) => {
   res.json({ result: true, method: "By phone" });
 });
 
-router.post("/test", (req, res) => {
-  const user = {
-    email: "ali.baba@gmail.com",
-    password: "12345678",
-    myField: "Best field in the world",
-  };
+// router.post("/test", (req, res) => {
+//   const user = {
+//     email: "ali.baba@gmail.com",
+//     password: "12345678",
+//     myField: "Best field in the world",
+//   };
 
-  const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET);
-  res.json({ result: true, accessToken: accessToken });
-});
+//   const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET);
+//   res.json({ result: true, accessToken: accessToken });
+// });
 
 async function populateSignup(userId, password, controlColde) {
   const newSignup = new Signup({
