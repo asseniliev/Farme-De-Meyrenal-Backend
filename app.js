@@ -12,6 +12,7 @@ const cors = require("cors");
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 var productsRouter = require("./routes/products");
+var geolocationsRouter = require("./routes/geolocations");
 
 var { router: shoppingcartsRouter } = require("./routes/shoppingcarts.js");
 var ordersRouter = require("./routes/orders");
@@ -32,5 +33,6 @@ app.use("/products", productsRouter);
 
 app.use("/shoppingcarts", shoppingcartsRouter);
 app.use("/orders", ordersRouter);
+app.use("/locations", geolocationsRouter);
 
 module.exports = app;
