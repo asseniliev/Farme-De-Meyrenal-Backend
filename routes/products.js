@@ -1,7 +1,6 @@
 var express = require("express");
 var router = express.Router();
 
-
 var Product = require("../models/product");
 var uniqid = require("uniqid");
 var authenticateToken = require("../modules/authenticateToken");
@@ -10,7 +9,8 @@ const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
 
 //Create a new product
-router.post("/", authenticateToken, async (req, res) => {
+router.post("/", async (req, res) => {
+  //router.post("/", authenticateToken, async (req, res) => {
   //incoming data:
   //header: authorization -> Bearer eyJhbGciOiJIUzI.... (jwt key)
   //req.body.title,  -> product title
@@ -100,7 +100,7 @@ router.put("/:id", authenticateToken, async (req, res) => {
 
 //Retrieve list of all available products for purchase
 router.get("/", async (req, res) => {
-  const result = await Product.find({ isActive: true })
+  const result = await Product.find({ isActive: true });
   res.json({ result: result });
 });
 
