@@ -9,36 +9,58 @@ router.get("/contours", async (req, res) => {
   // ).json();
   // const code = communityData[0].code;
 
-  const code = "07128";
+  const codes = ["07128", "07197", "07188", "07013"];
+  let latMin;
+  let latMax;
+  let lonMin;
+  let lonMax;
+  const polygons = [];
+  const names = [];
+  const latitudes = [];
+  const longitudes = [];
 
-  const geoData = await (
-    await fetch(
-      `https://geo.api.gouv.fr/communes?code=${code}&fields=nom,contour`
-    )
-  ).json();
-
-  const contour = geoData[0].contour.coordinates[0];
-  const polygonCoords = [];
-
-  const firstPoint = contour[0];
-  let latMin = Number(firstPoint[1]);
-  let latMax = Number(firstPoint[1]);
-  let lonMin = Number(firstPoint[0]);
-  let lonMax = Number(firstPoint[0]);
-
-  for (const point of contour) {
-    const lat = Number(point[1]);
-    const lon = Number(point[0]);
-
-    if (latMin > lat) latMin = lat;
-    if (lonMin > lon) lonMin = lon;
-    if (latMax < lat) latMax = lat;
-    if (lonMax < lon) lonMax = lon;
-
-    polygonCoords.push({
-      latitude: point[1],
-      longitude: point[0],
-    });
+  for (const code of codes) {
+    const polygonCoords = [];
+    const geoData = await (
+      await fetch(
+        `https://geo.api.gouv.fr/communes?code=${code}&fields=nom,contour,centre`
+      )
+    ).json();
+    names.push(geoData[0].nom);
+    const lat = Number(geoData[0].centre.coordinates[1]);
+    latitudes.push(lat);
+    const lon = Number(geoData[0].centre.coordinates[0]);
+    longitudes.push(lon);
+    const contour = geoData[0].contour.coordinates[0];
+    for (const point of contour) {
+      const lat = Number(point[1]);
+      const lon = Number(point[0]);
+      if (latMin) {
+        if (latMin > lat) latMin = lat;
+      } else {
+        latMin = lat;
+      }
+      if (lonMin) {
+        if (lonMin > lon) lonMin = lon;
+      } else {
+        lonMin = lon;
+      }
+      if (latMax) {
+        if (latMax < lat) latMax = lat;
+      } else {
+        latMax = lat;
+      }
+      if (lonMax) {
+        if (lonMax < lon) lonMax = lon;
+      } else {
+        lonMax = lon;
+      }
+      polygonCoords.push({
+        latitude: point[1],
+        longitude: point[0],
+      });
+    }
+    polygons.push(polygonCoords);
   }
 
   const latInit = (latMin + latMax) / 2;
@@ -46,8 +68,59 @@ router.get("/contours", async (req, res) => {
   // console.log("latInit = " + latInit);
   // console.log("lonInit = " + lonInit);
 
-  res.json({ polygonCoords });
+  console.log(latitudes);
+  res.json({
+    polygons: polygons,
+    names: names,
+    latitudes: latitudes,
+    longitudes: longitudes,
+    latInit: latInit,
+    lonInit: lonInit,
+  });
 });
+
+//   for(const code of codes){
+
+//   const contour = geoData[0].contour.coordinates[0];
+//   console.log(contour);
+//   for (const point of contour) {
+//     const lat = Number(point[1]);
+//     const lon = Number(point[0]);
+
+//     if (latMin) {
+//       if (latMin > lat) latMin = lat;
+//     } else {
+//       latMin = lat;
+//     }
+//     if (lonMin) {
+//       if (lonMin > lon) lonMin = lon;
+//     } else {
+//       lonMin = lon;
+//     }
+//     if (latMax) {
+//       if (latMax < lat) latMax = lat;
+//     } else {
+//       latMax = lat;
+//     }
+//     if (lonMax) {
+//       if (lonMax < lon) lonMax = lon;
+//     } else {
+//       lonMax = lon;
+//     }
+
+//     polygonCoords.push({
+//       latitude: point[1],
+//       longitude: point[0],
+//     });
+//   }}
+
+//   const latInit = (latMin + latMax) / 2;
+//   const lonInit = (lonMin + lonMax) / 2;
+//   // console.log("latInit = " + latInit);
+//   // console.log("lonInit = " + lonInit);
+
+//   res.json({ polygonCoords });
+// }
 
 router.get("/addresses", async (req, res) => {
   //console.log("Lon = " + req.query.lon);

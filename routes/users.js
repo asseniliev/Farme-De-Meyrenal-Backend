@@ -118,7 +118,9 @@ router.get("/afirm", async (req, res) => {
     // res.json({
     //   result: true,
     // });
-    res.redirect("https://www.youtube.com/");
+    res.redirect(
+      "https://res.cloudinary.com/dwpghnrrs/image/upload/v1677954855/zxqrmeyyn9iduthqditt.jpg"
+    );
   } else {
     res.json({
       result: false,
@@ -140,12 +142,11 @@ router.post("/signin", async (req, res) => {
     }
   }
   if (logUser) {
-    const user = {
+    const userEmail = {
       email: req.body.email,
     };
-
-    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET);
-    res.json({ result: true, accessToken: accessToken });
+    const accessToken = jwt.sign(userEmail, process.env.ACCESS_TOKEN_SECRET);
+    res.json({ result: true, user: user, accessToken: accessToken });
   } else {
     res.json({ result: false, message: "Username or password not correct" });
   }

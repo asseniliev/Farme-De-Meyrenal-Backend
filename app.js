@@ -16,6 +16,7 @@ var geolocationsRouter = require("./routes/geolocations");
 
 var { router: shoppingcartsRouter } = require("./routes/shoppingcarts.js");
 var ordersRouter = require("./routes/orders");
+var adminRouter = require("./routes/admin");
 
 var app = express();
 app.use(express.json());
@@ -34,5 +35,6 @@ app.use("/products", productsRouter);
 app.use("/shoppingcarts", shoppingcartsRouter);
 app.use("/orders", ordersRouter);
 app.use("/locations", geolocationsRouter);
+app.use("/admin", adminRouter);
 
 module.exports = app;
