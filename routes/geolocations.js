@@ -31,6 +31,7 @@ router.get("/contours", async (req, res) => {
     latitudes.push(lat);
     const lon = Number(geoData[0].centre.coordinates[0]);
     longitudes.push(lon);
+    console.log(`${lat} + ${lon} = ${lat + lon}`);
     const contour = geoData[0].contour.coordinates[0];
     for (const point of contour) {
       const lat = Number(point[1]);

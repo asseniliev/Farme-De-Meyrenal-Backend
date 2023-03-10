@@ -72,7 +72,7 @@ router.post("/signup", async (req, res) => {
       text +=
         'You signed up with this mail address to "Ferme-de-Meyrena" app. \n\n';
       text += "Follow the link below to finalize your signup!\n";
-      text += `http://localhost:3000/users/afirm?email=${newUser.email}&controlCode=${random}`;
+      text += `http://${process.env.IP}:3000/users/afirm?email=${newUser.email}&controlCode=${random}`;
 
       await sendMail(
         newUser.email,
@@ -119,7 +119,7 @@ router.get("/afirm", async (req, res) => {
     //   result: true,
     // });
     res.redirect(
-      "https://res.cloudinary.com/dwpghnrrs/image/upload/v1677954855/zxqrmeyyn9iduthqditt.jpg"
+      "https://res.cloudinary.com/dwpghnrrs/image/upload/v1678446213/Welcome_luymxv.jpg"
     );
   } else {
     res.json({
