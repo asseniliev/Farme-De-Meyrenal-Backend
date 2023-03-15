@@ -7,14 +7,14 @@ async function sendMail(receiverMail, mailTitle, mailText) {
   // Only needed if you don't have a real mail account for testing
   let testAccount = await nodemailer.createTestAccount();
 
-  const userId = process.env.TELER_ID;
-  const password = process.env.TELER_PASS;
+  const userId = process.env.ADMIN_MAIL_ID;
+  const password = process.env.ADMIN_MAIL_PASS;
 
   console.log("User ID: " + userId);
 
   // create reusable transporter object using the default SMTP transport
   let transporter = nodemailer.createTransport({
-    host: "smtp.outlook.com",
+    host: process.env.HOST,
     port: 587,
     secure: false, // true for 465, false for other ports
     auth: {
@@ -25,7 +25,7 @@ async function sendMail(receiverMail, mailTitle, mailText) {
 
   // send mail with defined transport object
   let info = await transporter.sendMail({
-    from: process.env.TELER_ID, // sender address mail
+    from: process.env.ADMIN_MAIL_ID, // sender address mail
     to: receiverMail, // list of receivers
     subject: mailTitle, // Subject line
     text: mailText, // plain text body
