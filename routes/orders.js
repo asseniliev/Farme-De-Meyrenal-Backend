@@ -57,22 +57,27 @@ router.get("/findOne/:id", async (req, res) => {
 });
 //
 //Filter orders (by users, by delivery region, by status)
-// Exemple por tester route: localhost:3000/orders/filter?userId=63ff2c235a4f4ccacaf25fad&status=confirmed&deliveryPlace=Bron
+// Exemple por tester route: localhost:3000/orders/filter?id=63ff2c235a4f4ccacaf25fad&status=confirmed&deliveryPlace=Bron
 //
 router.get("/filter", async (req, res) => {
-  const userId = req.query.userId;
+  const userId = req.query.user;
   const city = req.query.deliveryPlace;
   const status = req.query.status;
 
-  const filter = {
-    $and: [
-      userId ? { user: userId } : {},
-      city ? { city } : {},
-      status ? { status } : {},
-    ],
-  };
+  // const filter = {
+  //   $and: [
+  //     userId ? { user: userId } : {},
+  //     city ? { city } : {},
+  //     status ? { status } : {},
+  //   ],
+  // };
+  const filter = {};
+  if (userId) filter.user = userId;
+  if (city) filter.city = city;
+  if (status) filter.status = status;
+
   try {
-    const result = await Order.find(filter);
+    const result = await Order.find(filter).populate('user');
     if (result.length === 0)
       res.json({ result: false, message: "No orders match your search." });
     else res.json({ result: result });
