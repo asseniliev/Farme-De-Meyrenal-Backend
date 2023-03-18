@@ -1,7 +1,7 @@
 var express = require("express");
 var router = express.Router();
 
-var Market = require("../models/market");
+var Region = require("../models/region");
 
 /* GET home page. */
 router.get("/contours", async (req, res) => {
@@ -11,108 +11,74 @@ router.get("/contours", async (req, res) => {
   // ).json();
   // const code = communityData[0].code;
 
-  const markets = await Market.find();
+  const regions = await Region.find();
 
-  let latMin;
-  let latMax;
-  let lonMin;
-  let lonMax;
-  const polygons = [];
-  const names = [];
-  const marketHours = [];
-  const homeDeliveries = [];
-  const marketAddresses = [];
-  const marketLabels = [];
-  const latitudes = [];
-  const longitudes = [];
-  const marketsData = [];
 
-  for (const market of markets) {
+
+  let latMin = Number.MAX_VALUE;
+  let latMax = Number.MIN_VALUE;
+  let lonMin = Number.MAX_VALUE;
+  let lonMax = Number.MIN_VALUE;
+
+  const regionsData = [];
+
+  for (const region of regions) {
+
+    //Fetch the region's boundary points
     const polygonCoords = [];
     const geoData = await (
       await fetch(
-        `https://geo.api.gouv.fr/communes?code=${market.code}&fields=nom,contour,centre`
+        `https://geo.api.gouv.fr/communes?code=${region.code}&fields=nom,contour,centre`
       )
     ).json();
-    names.push(market.name);
-    if (market.market.address) {
-      latitudes.push(market.market.latitude);
-      longitudes.push(market.market.longitude);
-      marketHours.push(market.marketTime);
-      homeDeliveries.push(market.homeDelivery);
-      marketAddresses.push(market.name + ", " + market.market.address);
-      marketLabels.push(market.market.label);
-
-      marketsData.push({
-        latitude: market.market.latitude,
-        longitude: market.market.longitude,
-        homeDelivery: market.homeDelivery,
-        marketHour: market.marketTime,
-        marketAddress: (market.name + ", " + market.market.address),
-        label: market.market.label
-      })
-
-    } else {
-      // const lat = Number(geoData[0].centre.coordinates[1]);
-      latitudes.push(null);
-      // const lon = Number(geoData[0].centre.coordinates[0]);
-      longitudes.push(null);
-      marketHours.push(null);
-      homeDeliveries.push(market.homeDelivery);
-      marketAddresses.push(null);
-      marketLabels.push(null);
-    }
 
     //Fill the region's contours
     const contour = geoData[0].contour.coordinates[0];
+
     for (const point of contour) {
       const lat = Number(point[1]);
       const lon = Number(point[0]);
-      if (latMin) {
-        if (latMin > lat) latMin = lat;
-      } else {
-        latMin = lat;
-      }
-      if (lonMin) {
-        if (lonMin > lon) lonMin = lon;
-      } else {
-        lonMin = lon;
-      }
-      if (latMax) {
-        if (latMax < lat) latMax = lat;
-      } else {
-        latMax = lat;
-      }
-      if (lonMax) {
-        if (lonMax < lon) lonMax = lon;
-      } else {
-        lonMax = lon;
-      }
+
+      //Update latitude's and longitude's min and max values
+      if (latMin > lat) latMin = lat;
+      if (lonMin > lon) lonMin = lon;
+      if (latMax < lat) latMax = lat;
+      if (lonMax < lon) lonMax = lon;
+
       polygonCoords.push({
         latitude: point[1],
         longitude: point[0],
       });
     }
-    polygons.push(polygonCoords);
+
+    let marketData = {};
+    if (region.market.address) {
+      marketData = {
+        address: (region.name + ", " + region.market.address),
+        latitude: region.market.latitude,
+        longitude: region.market.longitude,
+        label: region.market.label,
+        marketHours: region.market.marketHours,
+      }
+    }
+
+    regionsData.push({
+      name: region.name,
+      polygon: polygonCoords,
+      //polygon: [],
+      market: marketData,
+      homeDeliveryHours: region.homeDeliveryHours
+    });
+
   }
 
   const latInit = (latMin + latMax) / 2;
   const lonInit = (lonMin + lonMax) / 2;
-  // console.log("latInit = " + latInit);
-  // console.log("lonInit = " + lonInit);
 
-  console.log(marketsData);
+  console.log(lonMin);
 
   res.json({
-    polygons: polygons,
-    names: names,
-    homeDeliveries: homeDeliveries,
-    marketHours: marketHours,
-    marketAddresses: marketAddresses,
-    marketLabels: marketLabels,
-    latitudes: latitudes,
-    longitudes: longitudes,
-    marketsData: marketsData,
+    regionsData: regionsData,
     latInit: latInit,
     lonInit: lonInit,
   });
