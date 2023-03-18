@@ -13,7 +13,6 @@ router.get("/contours", async (req, res) => {
 
   const markets = await Market.find();
 
-  //const codes = ["07128", "07197", "07188", "07013"];
   let latMin;
   let latMax;
   let lonMin;
@@ -26,6 +25,7 @@ router.get("/contours", async (req, res) => {
   const marketLabels = [];
   const latitudes = [];
   const longitudes = [];
+  const marketsData = [];
 
   for (const market of markets) {
     const polygonCoords = [];
@@ -42,12 +42,21 @@ router.get("/contours", async (req, res) => {
       homeDeliveries.push(market.homeDelivery);
       marketAddresses.push(market.name + ", " + market.market.address);
       marketLabels.push(market.market.label);
+
+      marketsData.push({
+        latitude: market.market.latitude,
+        longitude: market.market.longitude,
+        homeDelivery: market.homeDelivery,
+        marketHour: market.marketTime,
+        marketAddress: (market.name + ", " + market.market.address),
+        label: market.market.label
+      })
+
     } else {
       // const lat = Number(geoData[0].centre.coordinates[1]);
       latitudes.push(null);
       // const lon = Number(geoData[0].centre.coordinates[0]);
       longitudes.push(null);
-
       marketHours.push(null);
       homeDeliveries.push(market.homeDelivery);
       marketAddresses.push(null);
@@ -92,6 +101,8 @@ router.get("/contours", async (req, res) => {
   // console.log("latInit = " + latInit);
   // console.log("lonInit = " + lonInit);
 
+  console.log(marketsData);
+
   res.json({
     polygons: polygons,
     names: names,
@@ -101,6 +112,7 @@ router.get("/contours", async (req, res) => {
     marketLabels: marketLabels,
     latitudes: latitudes,
     longitudes: longitudes,
+    marketsData: marketsData,
     latInit: latInit,
     lonInit: lonInit,
   });
