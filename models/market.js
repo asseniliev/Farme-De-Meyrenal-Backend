@@ -7,6 +7,7 @@ const marketSchema = mongoose.Schema({
     address: String,
     latitude: Number,
     longitude: Number,
+    label: String
   },
   marketTime: String,
   homeDelivery: String,

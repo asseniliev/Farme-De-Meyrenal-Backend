@@ -47,6 +47,7 @@ router.get("/contours", async (req, res) => {
       latitudes.push(null);
       // const lon = Number(geoData[0].centre.coordinates[0]);
       longitudes.push(null);
+
       marketHours.push(null);
       homeDeliveries.push(market.homeDelivery);
       marketAddresses.push(null);
