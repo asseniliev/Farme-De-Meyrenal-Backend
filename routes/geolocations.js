@@ -20,6 +20,10 @@ router.get("/contours", async (req, res) => {
   let lonMax;
   const polygons = [];
   const names = [];
+  const marketHours = [];
+  const homeDeliveries = [];
+  const marketAddresses = [];
+  const marketLabels = [];
   const latitudes = [];
   const longitudes = [];
 
@@ -30,16 +34,23 @@ router.get("/contours", async (req, res) => {
         `https://geo.api.gouv.fr/communes?code=${market.code}&fields=nom,contour,centre`
       )
     ).json();
-    console.log(geoData.cent);
     names.push(market.name);
-    if (market.market !== {}) {
+    if (market.market.address) {
       latitudes.push(market.market.latitude);
       longitudes.push(market.market.longitude);
+      marketHours.push(market.marketTime);
+      homeDeliveries.push(market.homeDelivery);
+      marketAddresses.push(market.name + ", " + market.market.address);
+      marketLabels.push(market.market.label);
     } else {
-      const lat = Number(geoData[0].centre.coordinates[1]);
-      latitudes.push(lat);
-      const lon = Number(geoData[0].centre.coordinates[0]);
-      longitudes.push(lon);
+      // const lat = Number(geoData[0].centre.coordinates[1]);
+      latitudes.push(null);
+      // const lon = Number(geoData[0].centre.coordinates[0]);
+      longitudes.push(null);
+      marketHours.push(null);
+      homeDeliveries.push(market.homeDelivery);
+      marketAddresses.push(null);
+      marketLabels.push(null);
     }
 
     //Fill the region's contours
@@ -75,8 +86,6 @@ router.get("/contours", async (req, res) => {
     polygons.push(polygonCoords);
   }
 
-  console.log(latitudes);
-
   const latInit = (latMin + latMax) / 2;
   const lonInit = (lonMin + lonMax) / 2;
   // console.log("latInit = " + latInit);
@@ -85,6 +94,10 @@ router.get("/contours", async (req, res) => {
   res.json({
     polygons: polygons,
     names: names,
+    homeDeliveries: homeDeliveries,
+    marketHours: marketHours,
+    marketAddresses: marketAddresses,
+    marketLabels: marketLabels,
     latitudes: latitudes,
     longitudes: longitudes,
     latInit: latInit,

@@ -34,8 +34,8 @@ router.get("/contours", async (req, res) => {
         `https://geo.api.gouv.fr/communes?code=${market.code}&fields=nom,contour,centre`
       )
     ).json();
+    names.push(market.name);
     if (market.market.address) {
-      // console.log("Inside the if");
       latitudes.push(market.market.latitude);
       longitudes.push(market.market.longitude);
       marketHours.push(market.marketTime);
@@ -43,7 +43,6 @@ router.get("/contours", async (req, res) => {
       marketAddresses.push(market.name + ", " + market.market.address);
       marketLabels.push(market.market.label);
     } else {
-      // console.log("Inside the else");
       //const lat = geoData[0].centre.coordinates[1];
       latitudes.push(null);
       //const lon = Number(geoData[0].centre.coordinates[0]);
@@ -92,14 +91,13 @@ router.get("/contours", async (req, res) => {
   // console.log("latInit = " + latInit);
   // console.log("lonInit = " + lonInit);
 
-  console.log(latitudes);
   res.json({
     polygons: polygons,
     names: names,
     homeDeliveries: homeDeliveries,
     marketHours: marketHours,
     marketAddresses: marketAddresses,
-    //marketLabels: marketLabels,
+    marketLabels: marketLabels,
     latitudes: latitudes,
     longitudes: longitudes,
     latInit: latInit,
