@@ -1,5 +1,11 @@
-const addressSchema = require("./address");
 const mongoose = require("mongoose");
+
+const addressSchema = mongoose.Schema({
+  lat: Number,
+  lon: Number,
+  address: String,
+  city: String,
+});
 
 const userSchema = mongoose.Schema({
   email: String,

@@ -10,11 +10,31 @@ const bcrypt = require("bcrypt");
 
 const { deleteAllItems } = require("../routes/shoppingcarts");
 
+//===================================================================================================
+// ROUTE http://localhost:3000/users
+// Fetches data from api-adresse.data.gouv.fr service based on point's latitude and longitude. 
+// Used in AddressScreen.js to retrive the address when using the geolocalizer
+//===================================================================================================
 //Provide list of all users
-router.get("/", async (req, res, next) => {
+router.get("/", async (req, res) => {
+  // incoming data:  
+
   try {
-    const result = await User.find();
-    res.json({ result: result });
+    const users = await User.find();
+    const result = [];
+    for (const user of users) {
+      result.push({
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phoneNumber: user.phoneNumber,
+        deliveryAddress: user.deliveryAddress,
+        shoppingcart: user.shoppingcart,
+        isAdmin: user.isAdmin
+      });
+    }
+
+    res.json(result);
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
@@ -22,7 +42,7 @@ router.get("/", async (req, res, next) => {
 });
 
 /* GET users listing. */
-router.get("/deleteAllItems", async (req, res, next) => {
+router.get("/deleteAllItems", async (req, res) => {
   try {
     const result = await deleteAllItems(req.params.id);
     console.log(result);
@@ -33,11 +53,43 @@ router.get("/deleteAllItems", async (req, res, next) => {
   }
 });
 
-//Create new user
+//===================================================================================================
+// ROUTE http://localhost:3000/users/signup
+// Accepts a request for creation of a new user:
+// 1. Check if the requested user already exists or not. If not - next steps are executed
+// 2. Creates a new entry in shoppingCarts collection and gets its unique id. 
+//    This id will be assigned as a shopping ////cart for the newly created user
+// 3. Generates a random six-digits number used to confirm user's creation
+// 4. Creates a new entry in users collection, leaving the password field empty
+// 5. Creates an temporary entry in signups collection containing the generated user Id, 
+// the submitted password and the 6 digits code
+// 6. Construct a url to be submitted by the user for verification of the identify
+// 7. Submits a mail to the user containing the constructed url
+//
+// After receiving the email, user is supposed to click on the link to finalize the process of the creation
+//===================================================================================================
+
 router.post("/signup", async (req, res) => {
+  // incoming data: 
+  // req.body.email
+  // req.body.password
+  // req.body.firstName
+  // req.body.lastName
+  // req.body.phoneNumber
+  // req.body.deliveryAddress {
+  //   lat: Number,
+  //   lon: Number,
+  //   address: String,
+  //   city: String,
+  // }
+
+  //1. Check if the requested user already exists
   const existingUser = await User.findOne({ email: req.body.email });
-  console.log(req.body);
+
+
+
   if (existingUser === null) {
+    // 2. Creates a new entry in shoppingCarts collection
     const newShoppingcart = new Shoppingcart({
       items: [],
       totalAmount: 0,
@@ -45,7 +97,10 @@ router.post("/signup", async (req, res) => {
 
     const createdShoppingcart = await newShoppingcart.save();
 
+    // 3. Generates a random six-digits number
     const random = Math.floor(Math.random() * 1e6);
+
+    //4. Creates a new entry in users collection
     const cryptedPassword = bcrypt.hashSync(req.body.password, 10);
 
     const newUser = new User({
@@ -61,6 +116,7 @@ router.post("/signup", async (req, res) => {
 
     const createdUser = await newUser.save();
 
+    // 5. Creates an temporary entry in signups collection
     const isSignupFilled = await populateSignup(
       createdUser._id,
       cryptedPassword,
@@ -72,8 +128,11 @@ router.post("/signup", async (req, res) => {
       text +=
         'You signed up with this mail address to "Ferme-de-Meyrena" app. \n\n';
       text += "Follow the link below to finalize your signup!\n";
+
+      // 6. Construct a url to be submitted by the user
       text += `http://${process.env.IP}:3000/users/afirm?email=${newUser.email}&controlCode=${random}`;
 
+      // 7. Submits a mail to the user
       await sendMail(
         newUser.email,
         "Confirm signup in Ferme-de-Meyrenal app",
@@ -98,26 +157,43 @@ router.post("/signup", async (req, res) => {
   }
 });
 
+
+//===================================================================================================
+// ROUTE http://localhost:3000/users/afirm
+// Called by the url provided in the mail sent to the user after the signup
+// 1. Checks if the user mail exists. If yes - the next steps are executed
+// 2. Finds the entry in signups collection corresponding to the submitted mail address and 6 digits code. 
+//    If entry found - the following lines execure
+// 3. Takes the password present in the signups collection and updates it in the corresponding user 
+//    in users collection
+// 4. Deletes the temporary entry from the signups collection
+// 5. Redirect the browser to a web resource containing welcome message and image of the Meyrenal farm
+//===================================================================================================
+
 router.get("/afirm", async (req, res) => {
+  // 1. Checks if the user mail exists. If yes - the next steps are executed
   const user = await User.findOne({ email: req.query.email });
   let isAfirmed = false;
   let password = "";
   if (user) {
+    // 2. Finds the entry in signups collection
     const signup = await Signup.findOne({
       userId: user._id,
       controlCode: req.query.controlCode,
     });
     if (signup) {
+      // 3. Takes the password present in the signups collection
       password = signup.password;
       isAfirmed = true;
     }
   }
   if (isAfirmed) {
-    await Signup.deleteOne({ userId: user._id });
+    // 3. Update the password in the users collection
     await User.updateOne({ _id: user._id }, { password: password });
-    // res.json({
-    //   result: true,
-    // });
+    //4. Deletes the temporary entry
+    await Signup.deleteOne({ userId: user._id });
+
+    // 5. Redirect the browser
     res.redirect(
       "https://res.cloudinary.com/dwpghnrrs/image/upload/v1678446213/Welcome_luymxv.jpg"
     );

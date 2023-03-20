@@ -2,19 +2,21 @@ var express = require("express");
 var router = express.Router();
 
 var Region = require("../models/region");
-
-/* GET home page. */
+//===================================================================================================
+// ROUTE http://localhost:3000/locations/contours
+// For each region found in the regions collections fetches data from geo.api.gouv.fr API 
+// and gets information about the region’s contour. Also collects data immediately from 
+// the documents in the collection and sends it to the frontend. Used in the AddressScreen.js 
+// to display information about the regions where Flavien delivers and also market information.
+//===================================================================================================
 router.get("/contours", async (req, res) => {
-  // const postalCode = "69500";
-  // const communityData = await (
-  //   await fetch(`https://geo.api.gouv.fr/communes?codePostal=${postalCode}`)
-  // ).json();
-  // const code = communityData[0].code;
-
   const regions = await Region.find();
+  // incoming data: none
 
-
-
+  // The variables below will contain the min and max values for the
+  // altitudes and longitudes of all selected regions.
+  // Used to determine the center of the regions and locate the map 
+  // in this center
   let latMin = Number.MAX_VALUE;
   let latMax = Number.MIN_VALUE;
   let lonMin = Number.MAX_VALUE;
@@ -24,11 +26,18 @@ router.get("/contours", async (req, res) => {
 
   for (const region of regions) {
 
-    //Fetch the region's boundary points
+    // Fetch the region's boundary points
+    // !!! Attention !!!
+    // the variable 'region.code' IS NOT the commune's postal code
+    // To find that code, we can use the postal code (which we normally know)
+    // and fetch https://geo.api.gouv.fr/communes?codePostal=${postalCode}
+    // The database contains immediately the commune's code that we need -> therefore
+    // we don't need to fetch via the postal code.
+
     const polygonCoords = [];
     const geoData = await (
       await fetch(
-        `https://geo.api.gouv.fr/communes?code=${region.code}&fields=nom,contour,centre`
+        `https://geo.api.gouv.fr/communes?code=${region.code}&fields=nom,contour`
       )
     ).json();
 
@@ -51,6 +60,8 @@ router.get("/contours", async (req, res) => {
       });
     }
 
+    // Populate the market data frmo the database only
+    // if there is a sub-document containing such data
     let marketData = {};
     if (region.market.address) {
       marketData = {
@@ -62,6 +73,7 @@ router.get("/contours", async (req, res) => {
       }
     }
 
+    // Construct the data for the region
     regionsData.push({
       name: region.name,
       polygon: polygonCoords,
@@ -72,10 +84,10 @@ router.get("/contours", async (req, res) => {
 
   }
 
+  // Calculate the center of the map
   const latInit = (latMin + latMax) / 2;
   const lonInit = (lonMin + lonMax) / 2;
 
-  console.log(lonMin);
 
   res.json({
     regionsData: regionsData,
@@ -84,8 +96,17 @@ router.get("/contours", async (req, res) => {
   });
 });
 
+
+//===================================================================================================
+// ROUTE http://localhost:3000/locations/addressbycoordinates    (Address-By-Coordinates)
+// Fetches data from api-adresse.data.gouv.fr service based on point's latitude and longitude. 
+// Used in AddressScreen.js to retrive the address when using the geolocalizer
+//===================================================================================================
 router.get("/addressbycoordinates", async (req, res) => {
-  //console.log("Lon = " + req.query.lon);
+  //incoming data:
+  //req.query.lat -> point's geogtaphical latitude
+  //req.query.lon -> point's geogtaphical longitude
+
   const addresses = await (
     await fetch(
       `https://api-adresse.data.gouv.fr/reverse/?lon=${req.query.lon}&lat=${req.query.lat}`
@@ -98,7 +119,15 @@ router.get("/addressbycoordinates", async (req, res) => {
   });
 });
 
+//===================================================================================================
+// ROUTE http://localhost:3000/locations/addressbystring     (Address-By-String)
+// Fetches data from api-adresse.data.gouv.fr service based on an address search string. 
+// Used in AddressScreen.js to retrive the address when entry is manually made in the address field
+//===================================================================================================
 router.get("/addressbystring", async (req, res) => {
+  //incoming data:
+  //req.query.q -> a string that is part of the address
+
   const addresses = await (
     await fetch(
       `https://api-adresse.data.gouv.fr/search/?q=${req.query.q}&limit=1}`
