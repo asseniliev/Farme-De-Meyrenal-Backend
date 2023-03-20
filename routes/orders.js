@@ -64,23 +64,18 @@ router.get("/filter", async (req, res) => {
   const city = req.query.deliveryPlace;
   const status = req.query.status;
 
-  // const filter = {
-  //   $and: [
-  //     userId ? { user: userId } : {},
-  //     city ? { city } : {},
-  //     status ? { status } : {},
-  //   ],
-  // };
   const filter = {};
   if (userId) filter.user = userId;
   if (city) filter.city = city;
   if (status) filter.status = status;
 
   try {
-    const result = await Order.find(filter).populate('user');
+    const result = await Order.find(filter).populate('user').populate('items.productId');
     if (result.length === 0)
       res.json({ result: false, message: "No orders match your search." });
-    else res.json({ result: result });
+    else {
+    console.log(result)
+    res.json({ result: result })};
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
