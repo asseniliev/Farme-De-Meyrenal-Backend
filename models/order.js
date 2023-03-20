@@ -1,10 +1,12 @@
-const { shoppingcartSchema } = require("./shoppingcart");
 const mongoose = require("mongoose");
 
+
 const itemSchema = mongoose.Schema({
-  product: { type: mongoose.Schema.Types.ObjectId, ref: "products" },
+  productId: { type: mongoose.Schema.Types.ObjectId, ref: "products" },
+  title: String,
   quantity: Number,
   price: Number,
+  priceUnit: String,
 });
 
 const orderSchema = mongoose.Schema({
