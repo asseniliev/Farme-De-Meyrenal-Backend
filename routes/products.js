@@ -8,19 +8,28 @@ var authenticateToken = require("../modules/authenticateToken");
 const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
 
+//===================================================================================================
 //Create a new product
-router.post("/", async (req, res) => {
-  //router.post("/", authenticateToken, async (req, res) => {
-  //incoming data:
-  //header: authorization -> Bearer eyJhbGciOiJIUzI.... (jwt key)
-  //req.body.title,  -> product title
-  //req.files.photoFromFront -> the image of the article
-  //req.body.description -> product description
-  //req.body.price -> price for the unit scale (10€ per 6 eggs)
-  //req.body.unitScale -> scale for the price (per 1 Kg, per 500g, etc)
-  //req.body.priceUnit -> the unit of measurement (kg, piece, ...)
+// 1. Checks if  jwt token is valid and if user is active. If yes - following steps take place
+// 2. Check if there is an existing active product with the same name. If not - following step are completed
+// 3. Store temp file with the image in the backend folders
+// 4. Upload the image file in Claudinary repository
+// 5. Construct data of the product to be created
+// 6. Create new document in the products collection
+//===================================================================================================
+router.post("/", authenticateToken, async (req, res) => {
+  //router.post("/", async (req, res) => {
+  // incoming data:
+  // header: authorization -> Bearer eyJhbGciOiJIUzI.... (jwt key)
+  // req.body.title,  -> product title
+  // req.files.photoFromFront -> the image of the article
+  // req.body.description -> product description
+  // req.body.price -> price for the unit scale (10€ per 6 eggs)
+  // req.body.unitScale -> scale for the price (per 1 Kg, per 500g, etc)
+  // req.body.priceUnit -> the unit of measurement (kg, piece, ...)
 
   try {
+    // 2. Check if there is an existing active product
     const existingProduct = await Product.findOne({
       title: req.body.title,
       isActive: true,
@@ -34,6 +43,7 @@ router.post("/", async (req, res) => {
       return;
     }
 
+    // 3. Store temp file with the image
     const tempFileName = uniqid();
     const photoPath = `tmp/${tempFileName}.jpg`;
     const resultMove = await req.files.photoFromFront.mv(photoPath);
@@ -43,9 +53,11 @@ router.post("/", async (req, res) => {
       return;
     }
 
+    // 4. Upload the image in Claudinary 
     const resultClaudinady = await cloudinary.uploader.upload(photoPath);
     fs.unlinkSync(photoPath);
 
+    // 5. Construct data of the product
     const newProduct = new Product({
       title: req.body.title,
       description: req.body.description,
@@ -56,6 +68,7 @@ router.post("/", async (req, res) => {
       isActive: true,
     });
 
+    // 6. Create new document in the collection
     const createdProduct = await newProduct.save();
     if (createdProduct.title === newProduct.title) {
       res.json({ result: true, product: newProduct });

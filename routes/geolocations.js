@@ -2,6 +2,9 @@ var express = require("express");
 var router = express.Router();
 
 var Region = require("../models/region");
+
+
+
 //===================================================================================================
 // ROUTE http://localhost:3000/locations/contours
 // For each region found in the regions collections fetches data from geo.api.gouv.fr API 

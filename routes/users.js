@@ -15,7 +15,7 @@ const { deleteAllItems } = require("../routes/shoppingcarts");
 // Fetches data from api-adresse.data.gouv.fr service based on point's latitude and longitude. 
 // Used in AddressScreen.js to retrive the address when using the geolocalizer
 //===================================================================================================
-//Provide list of all users
+
 router.get("/", async (req, res) => {
   // incoming data:  
 
@@ -64,7 +64,7 @@ router.get("/deleteAllItems", async (req, res) => {
 // 5. Creates an temporary entry in signups collection containing the generated user Id, 
 // the submitted password and the 6 digits code
 // 6. Construct a url to be submitted by the user for verification of the identify
-// 7. Submits a mail to the user containing the constructed url
+// 7. Compose and submits a mail to the user containing the constructed url
 //
 // After receiving the email, user is supposed to click on the link to finalize the process of the creation
 //===================================================================================================
@@ -85,8 +85,6 @@ router.post("/signup", async (req, res) => {
 
   //1. Check if the requested user already exists
   const existingUser = await User.findOne({ email: req.body.email });
-
-
 
   if (existingUser === null) {
     // 2. Creates a new entry in shoppingCarts collection
@@ -123,6 +121,7 @@ router.post("/signup", async (req, res) => {
       random
     );
 
+    // 7. Compose a mail to the user
     if (createdUser.email === newUser.email && isSignupFilled) {
       let text = "Bonjour \n\n, ";
       text +=
@@ -205,14 +204,24 @@ router.get("/afirm", async (req, res) => {
   }
 });
 
-//Login existing user
+//===================================================================================================
+// ROUTE http://localhost:3000/users/signin
+// Used to manage user's signin request
+// 1. Check if user's mail exists and if yes - checks if the password 
+//    corresponds to the password in the database. If authenticated:
+// 2. Generate a jwt token containing user's mail 
+//===================================================================================================
+
 router.post("/signin", async (req, res) => {
   //incoming data:
   //req.body.email,
   //req.body.password,
+
+  // 1. Check if user's mail exists 
   const user = await User.findOne({ email: req.body.email });
   let logUser = false;
   if (user) {
+    // 1. Checks if the password corresponds to the password in the database
     if (bcrypt.compareSync(req.body.password, user.password)) {
       logUser = true;
     }
@@ -221,6 +230,7 @@ router.post("/signin", async (req, res) => {
     const userEmail = {
       email: req.body.email,
     };
+    // 2. Generate a jwt token containing user's mail 
     const accessToken = jwt.sign(userEmail, process.env.ACCESS_TOKEN_SECRET);
     res.json({ result: true, user: user, accessToken: accessToken });
   } else {
@@ -228,8 +238,19 @@ router.post("/signin", async (req, res) => {
   }
 });
 
-//Modify existing user by id/
+//===================================================================================================
+// ROUTE http://localhost:3000/users/{id}
+// Modify existing user by id
+//===================================================================================================
+
 router.put("/:id", async (req, res) => {
+  // incoming data:
+  // req.params.id
+  // req.body.firstName,
+  // req.body.lastName,
+  // req.body.phoneNumber,
+  // req.body.deliveryAddress
+
   try {
     const userToUpdate = await User.updateOne(
       { _id: req.params.id },
@@ -244,7 +265,7 @@ router.put("/:id", async (req, res) => {
 
     const updatedUser = await User.findById(req.params.id);
 
-    if (updatedUser.matchedCount > 0) {
+    if (userToUpdate.matchedCount > 0) {
       res.json({ result: true, user: updatedUser });
     } else {
       res.json({
@@ -258,8 +279,13 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-//Delete user (by putting its password to black)
+//===================================================================================================
+// ROUTE http://localhost:3000/users/{id}
+// Delete existing user by id (by setting its password to "")
+//===================================================================================================
 router.delete("/:id", async (req, res) => {
+  // incoming data:
+  // req.params.id
   try {
     await User.updateOne({ _id: req.params.id }, { password: "" });
     const deletedUser = await User.findOne({ _id: req.params.id });
