@@ -9,7 +9,8 @@ const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
 
 //===================================================================================================
-//Create a new product
+// ROUTE http://localhost:3000/products
+// Create a new product
 // 1. Checks if  jwt token is valid and if user is active. If yes - following steps take place
 // 2. Check if there is an existing active product with the same name. If not - following step are completed
 // 3. Store temp file with the image in the backend folders
@@ -84,8 +85,21 @@ router.post("/", authenticateToken, async (req, res) => {
   }
 });
 
-//Update an existing product
-router.put("/:id", authenticateToken, async (req, res) => {
+//===================================================================================================
+// ROUTE http://localhost:3000/products/{id}
+// Update an existing product
+// 1. Checks if  jwt token is valid and if user is active. If yes - following steps take place
+// 2. Updates the product using the provided data
+//===================================================================================================
+
+router.put("/:id", async (req, res) => {
+  //router.put("/:id", authenticateToken, async (req, res) => {
+  // Incoming data:
+  // req.params.id  - product id
+  // req.body.description
+  // req.body.imageUrl
+  // req.body.price
+  // req.body.isActive  - used to activate/deactivate the product
   try {
     const productToUpdate = await Product.updateOne(
       { _id: req.params.id },
@@ -111,14 +125,14 @@ router.put("/:id", authenticateToken, async (req, res) => {
   }
 });
 
-//Retrieve list of all available products for purchase
+//===================================================================================================
+// ROUTE http://localhost:3000/products
+// Retrieve list of all available products for purchase
+//===================================================================================================
 router.get("/", async (req, res) => {
   const result = await Product.find({ isActive: true });
   res.json({ result: result });
 });
 
-router.post("/test", authenticateToken, async (req, res) => {
-  res.json({ user: req.user });
-});
 
 module.exports = router;

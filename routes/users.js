@@ -286,6 +286,7 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   // incoming data:
   // req.params.id
+  console.log("delete");
   try {
     await User.updateOne({ _id: req.params.id }, { password: "" });
     const deletedUser = await User.findOne({ _id: req.params.id });
@@ -302,6 +303,8 @@ router.delete("/:id", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
+
+
 
 //Filter users by inactive
 router.get("/inactive", async (req, res) => {
@@ -325,6 +328,13 @@ router.get("/active", async (req, res) => {
   }
 });
 
+//===================================================================================================
+// ROUTE http://localhost:3000/users/contact
+// Sends a message to Flavian when user works with "Contact Flavian" functionality
+// 1. Check what option for contact user has selected
+// 2. Compose the message to Flavian
+// 3. Submit the message
+//===================================================================================================
 router.post("/contact", async (req, res) => {
   //incoming data:
   //req.body.userId,  -> this is the User._id value
@@ -335,7 +345,9 @@ router.post("/contact", async (req, res) => {
   const mailTitle = "Client contacted you";
   let mailText = "Bonjour, \n\n";
 
+  // 1. Check what option for contact user has selected
   switch (req.body.method) {
+    // 2. Compose the message to Flavian
     case "phone":
       mailText += `Client ${user.firstName} ${user.lastName} would like to speak with you.\n`;
       mailText += `Please call at phone number ${user.phoneNumber}\n\n`;
@@ -352,8 +364,12 @@ router.post("/contact", async (req, res) => {
       break;
   }
 
+  // 3. Submit the message
+  // !!! ATTENTION !!!
+  // Here on the place of the 'user.email' we must set the real mail of Flavian.
+  // We leave 'user.email' as we are testing with our own mails
   sendMail(user.email, mailTitle, mailText);
-  res.json({ result: true, method: "By phone" });
+  res.json({ result: true });   // This function must be further elaborated to process eventual errors occurring during mails submission
 });
 
 // router.post("/test", (req, res) => {

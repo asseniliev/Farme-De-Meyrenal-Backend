@@ -3,10 +3,30 @@ var router = express.Router();
 const { ObjectId } = require("mongodb");
 const Order = require("../models/order");
 
-//User create new order
+//===================================================================================================
+// ROUTE http://localhost:3000/orders
+// Create a new  order
+// 1. Construct the new order's number
+// 2. Create the new order
+// 3. Check if the new order was successfully created and return the result
+//===================================================================================================
 router.post("/", async (req, res) => {
+  // incoming data
+  // req.body.id  - user id
+  // req.body.city - the user's city
+  // req.body.items - the order items structure: {
+  //    productId: { type: mongoose.Schema.Types.ObjectId, ref: "products" },
+  //    title: String,
+  //    quantity: Number,
+  //    price: Number,
+  //    priceUnit: String,
+  //  }
+  // req.body.totalAmount
+
+  // 1. Construct the new order's number
   const orderNumber = (await getLastNumber()) + 1;
-  console.log("Order No. " + orderNumber);
+
+  // 2. Create the new order
   const newOrder = new Order({
     orderNumber: orderNumber,
     user: req.body.id,
@@ -19,11 +39,10 @@ router.post("/", async (req, res) => {
     isCancelled: false,
   });
 
-  console.log(newOrder);
-
   try {
     const createdOrder = await newOrder.save();
 
+    // 3. Check if the new order was well created
     if (
       createdOrder.items.length === newOrder.items.length &&
       createdOrder.totalAmount === newOrder.totalAmount
@@ -31,7 +50,6 @@ router.post("/", async (req, res) => {
       res.json({
         result: true,
         order: createdOrder.orderNumber,
-        message: "Order created",
       });
     } else {
       res.json({
@@ -45,8 +63,16 @@ router.post("/", async (req, res) => {
   }
 });
 
-//Search order by ID
-router.get("/findOne/:id", async (req, res) => {
+//===================================================================================================
+// ROUTE http://localhost:3000/orders/{id}
+// Get an order by ID
+//===================================================================================================
+router.get("/:id", async (req, res) => {
+  // router.get("/findOne/:id", async (req, res) => {
+  // Incoming data:
+  // req.params.id  - the order id
+  console.log("FindOne route");
+
   try {
     const result = await Order.findById(req.params.id);
     res.json({ result: result });
@@ -55,11 +81,22 @@ router.get("/findOne/:id", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
+
+
+
+
+//===================================================================================================
+// ROUTE http://localhost:3000/orders
+// Filter orders (by users, by delivery region, by status)
+// Exemple por tester route: localhost:3000/orders/?user=6415d5b0fae91ef10621dd48&status=confirmed&deliveryPlace=Quintenas
 //
-//Filter orders (by users, by delivery region, by status)
-// Exemple por tester route: localhost:3000/orders/filter?id=63ff2c235a4f4ccacaf25fad&status=confirmed&deliveryPlace=Bron
-//
-router.get("/filter", async (req, res) => {
+router.get("/", async (req, res) => {
+  // router.get("/filter", async (req, res) => {
+  // incoming data:
+  // req.query.user - the user who created the order
+  // req.query.deliveryPlace - the city where order must be delivered
+  // req.query.status - the status of the odrer
+
   const userId = req.query.user;
   const city = req.query.deliveryPlace;
   const status = req.query.status;
@@ -74,8 +111,8 @@ router.get("/filter", async (req, res) => {
     if (result.length === 0)
       res.json({ result: false, message: "No orders match your search." });
     else {
-    console.log(result)
-    res.json({ result: result })};
+      res.json({ result: result })
+    };
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
@@ -91,12 +128,8 @@ async function getLastNumber() {
       },
     },
   ]);
+
   return result[0].maxNumber;
-  // .toArray(function (err, result) {
-  //   if (err) throw err;
-  //   console.log(result[0].maxNumber);
-  //   res.json({ result: result[0].maxNumber });
-  // });
 }
 
 module.exports = router;
