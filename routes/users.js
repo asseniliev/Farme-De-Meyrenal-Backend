@@ -329,7 +329,7 @@ router.get("/active", async (req, res) => {
 });
 
 //===================================================================================================
-// ROUTE http://localhost:3000/users/contact
+// ROUTE http://localhost:3000/users/contact - NOT USED. STAYS HERE FOR REFERENCE BUT WILL BE LATER REMOVED
 // Sends a message to Flavian when user works with "Contact Flavian" functionality
 // 1. Check what option for contact user has selected
 // 2. Compose the message to Flavian
