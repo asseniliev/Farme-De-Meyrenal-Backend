@@ -41,17 +41,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-/* GET users listing. */
-router.get("/deleteAllItems", async (req, res) => {
-  try {
-    const result = await deleteAllItems(req.params.id);
-    console.log(result);
-    res.json({ result: result });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
-  }
-});
 
 //===================================================================================================
 // ROUTE http://localhost:3000/users/signup
