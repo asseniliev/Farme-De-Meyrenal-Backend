@@ -52,8 +52,6 @@ async function sendMail(receiverMail, mailTitle, mailText) {
     to: receiverMail,
     from: process.env.EMAIL,
   });
-
-  console.log("Mail sent");
 }
 
 module.exports = sendMail;
