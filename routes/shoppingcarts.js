@@ -4,10 +4,9 @@ var router = express.Router();
 var { Shoppingcart } = require("../models/shoppingcart");
 var Product = require("../models/product");
 
-
 //===================================================================================================
 // ROUTE http://localhost:3000/shoppingcarts/{id}
-// Updates the shopping cart: adds a new item (if item not yet present in the cart) 
+// Updates the shopping cart: adds a new item (if item not yet present in the cart)
 // or updates its quantity (if product is already present)
 // 1. Find the shopping cart and the product whose id's are submitted in the request
 // 2. Construct item object to be used to update the shopping cart
@@ -17,7 +16,7 @@ var Product = require("../models/product");
 router.put("/:id", async (req, res) => {
   // incoming data:
   // req.params.id   (shopping cart id)
-  // req.body.productId  
+  // req.body.productId
   // req.body.quantity
 
   try {
@@ -82,14 +81,11 @@ router.put("/:id", async (req, res) => {
       });
     }
   } catch (error) {
-    console.error(error);
     res.status(500).send("Internal Server Error");
   }
 });
 
 async function deleteAllItems(cartId) {
-  console.log("cartId = " + cartId);
-
   const cartToUpdate = await Shoppingcart.updateOne(
     { _id: cartId },
     {

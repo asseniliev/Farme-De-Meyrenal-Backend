@@ -12,7 +12,7 @@ const { deleteAllItems } = require("../routes/shoppingcarts");
 
 
 router.get("/", async (req, res) => {
-  // incoming data:  
+  // incoming data:
 
   try {
     const users = await User.find();
@@ -25,25 +25,12 @@ router.get("/", async (req, res) => {
         phoneNumber: user.phoneNumber,
         deliveryAddress: user.deliveryAddress,
         shoppingcart: user.shoppingcart,
-        isAdmin: user.isAdmin
+        isAdmin: user.isAdmin,
       });
     }
 
     res.json(result);
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Internal Server Error");
-  }
-});
-
-/* GET users listing. */
-router.get("/deleteAllItems", async (req, res) => {
-  try {
-    const result = await deleteAllItems(req.params.id);
-    console.log(result);
-    res.json({ result: result });
-  } catch (error) {
-    console.error(error);
     res.status(500).send("Internal Server Error");
   }
 });
@@ -52,11 +39,11 @@ router.get("/deleteAllItems", async (req, res) => {
 // ROUTE http://localhost:3000/users/signup
 // Accepts a request for creation of a new user:
 // 1. Check if the requested user already exists or not. If not - next steps are executed
-// 2. Creates a new entry in shoppingCarts collection and gets its unique id. 
+// 2. Creates a new entry in shoppingCarts collection and gets its unique id.
 //    This id will be assigned as a shopping ////cart for the newly created user
 // 3. Generates a random six-digits number used to confirm user's creation
 // 4. Creates a new entry in users collection, leaving the password field empty
-// 5. Creates an temporary entry in signups collection containing the generated user Id, 
+// 5. Creates an temporary entry in signups collection containing the generated user Id,
 // the submitted password and the 6 digits code
 // 6. Construct a url to be submitted by the user for verification of the identify
 // 7. Compose and submits a mail to the user containing the constructed url
@@ -65,7 +52,7 @@ router.get("/deleteAllItems", async (req, res) => {
 //===================================================================================================
 
 router.post("/signup", async (req, res) => {
-  // incoming data: 
+  // incoming data:
   // req.body.email
   // req.body.password
   // req.body.firstName
@@ -151,14 +138,13 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-
 //===================================================================================================
 // ROUTE http://localhost:3000/users/afirm
 // Called by the url provided in the mail sent to the user after the signup
 // 1. Checks if the user mail exists. If yes - the next steps are executed
-// 2. Finds the entry in signups collection corresponding to the submitted mail address and 6 digits code. 
+// 2. Finds the entry in signups collection corresponding to the submitted mail address and 6 digits code.
 //    If entry found - the following lines execure
-// 3. Takes the password present in the signups collection and updates it in the corresponding user 
+// 3. Takes the password present in the signups collection and updates it in the corresponding user
 //    in users collection
 // 4. Deletes the temporary entry from the signups collection
 // 5. Redirect the browser to a web resource containing welcome message and image of the Meyrenal farm
@@ -202,9 +188,9 @@ router.get("/afirm", async (req, res) => {
 //===================================================================================================
 // ROUTE http://localhost:3000/users/signin
 // Used to manage user's signin request
-// 1. Check if user's mail exists and if yes - checks if the password 
+// 1. Check if user's mail exists and if yes - checks if the password
 //    corresponds to the password in the database. If authenticated:
-// 2. Generate a jwt token containing user's mail 
+// 2. Generate a jwt token containing user's mail
 //===================================================================================================
 
 router.post("/signin", async (req, res) => {
@@ -212,7 +198,7 @@ router.post("/signin", async (req, res) => {
   //req.body.email,
   //req.body.password,
 
-  // 1. Check if user's mail exists 
+  // 1. Check if user's mail exists
   const user = await User.findOne({ email: req.body.email });
   let logUser = false;
   if (user) {
@@ -225,7 +211,7 @@ router.post("/signin", async (req, res) => {
     const userEmail = {
       email: req.body.email,
     };
-    // 2. Generate a jwt token containing user's mail 
+    // 2. Generate a jwt token containing user's mail
     const accessToken = jwt.sign(userEmail, process.env.ACCESS_TOKEN_SECRET);
     res.json({ result: true, user: user, accessToken: accessToken });
   } else {
@@ -269,7 +255,6 @@ router.put("/:id", async (req, res) => {
       });
     }
   } catch (error) {
-    console.error(error);
     res.status(500).send("Internal Server Error");
   }
 });
@@ -281,7 +266,6 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   // incoming data:
   // req.params.id
-  console.log("delete");
   try {
     await User.updateOne({ _id: req.params.id }, { password: "" });
     const deletedUser = await User.findOne({ _id: req.params.id });
@@ -294,12 +278,9 @@ router.delete("/:id", async (req, res) => {
       });
     }
   } catch (error) {
-    console.error(error);
     res.status(500).send("Internal Server Error");
   }
 });
-
-
 
 //Filter users by inactive
 router.get("/inactive", async (req, res) => {
@@ -307,7 +288,6 @@ router.get("/inactive", async (req, res) => {
     const users = await User.find({ password: "" });
     res.json(users);
   } catch (error) {
-    console.error(error);
     res.status(500).send("Internal Server Error");
   }
 });
@@ -318,7 +298,6 @@ router.get("/active", async (req, res) => {
     const users = await User.find({ password: { $ne: "" } });
     res.json(users);
   } catch (error) {
-    console.error(error);
     res.status(500).send("Internal Server Error");
   }
 });
@@ -364,7 +343,7 @@ router.post("/contact", async (req, res) => {
   // Here on the place of the 'user.email' we must set the real mail of Flavian.
   // We leave 'user.email' as we are testing with our own mails
   sendMail(user.email, mailTitle, mailText);
-  res.json({ result: true });   // This function must be further elaborated to process eventual errors occurring during mails submission
+  res.json({ result: true }); // This function must be further elaborated to process eventual errors occurring during mails submission
 });
 
 // router.post("/test", (req, res) => {
