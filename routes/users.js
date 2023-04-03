@@ -10,11 +10,6 @@ const bcrypt = require("bcrypt");
 
 const { deleteAllItems } = require("../routes/shoppingcarts");
 
-//===================================================================================================
-// ROUTE http://localhost:3000/users
-// Fetches data from api-adresse.data.gouv.fr service based on point's latitude and longitude.
-// Used in AddressScreen.js to retrive the address when using the geolocalizer
-//===================================================================================================
 
 router.get("/", async (req, res) => {
   // incoming data:
