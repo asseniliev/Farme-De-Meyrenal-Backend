@@ -58,7 +58,6 @@ router.post("/", async (req, res) => {
       });
     }
   } catch (error) {
-    console.error(error);
     res.status(500).send("Internal Server Error");
   }
 });
@@ -71,19 +70,14 @@ router.get("/:id", async (req, res) => {
   // router.get("/findOne/:id", async (req, res) => {
   // Incoming data:
   // req.params.id  - the order id
-  console.log("FindOne route");
 
   try {
     const result = await Order.findById(req.params.id);
     res.json({ result: result });
   } catch (error) {
-    console.error(error);
     res.status(500).send("Internal Server Error");
   }
 });
-
-
-
 
 //===================================================================================================
 // ROUTE http://localhost:3000/orders
@@ -107,14 +101,15 @@ router.get("/", async (req, res) => {
   if (status) filter.status = status;
 
   try {
-    const result = await Order.find(filter).populate('user').populate('items.productId');
+    const result = await Order.find(filter)
+      .populate("user")
+      .populate("items.productId");
     if (result.length === 0)
       res.json({ result: false, message: "No orders match your search." });
     else {
-      res.json({ result: result })
-    };
+      res.json({ result: result });
+    }
   } catch (error) {
-    console.error(error);
     res.status(500).send("Internal Server Error");
   }
 });

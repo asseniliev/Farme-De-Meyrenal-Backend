@@ -54,7 +54,7 @@ router.post("/", authenticateToken, async (req, res) => {
       return;
     }
 
-    // 4. Upload the image in Claudinary 
+    // 4. Upload the image in Claudinary
     const resultClaudinady = await cloudinary.uploader.upload(photoPath);
     fs.unlinkSync(photoPath);
 
@@ -80,7 +80,6 @@ router.post("/", authenticateToken, async (req, res) => {
       });
     }
   } catch (error) {
-    console.error(error);
     res.status(500).send("Internal Server Error");
   }
 });
@@ -120,7 +119,6 @@ router.put("/:id", async (req, res) => {
       });
     }
   } catch (error) {
-    console.error(error);
     res.status(500).send("Internal Server Error");
   }
 });
@@ -133,6 +131,5 @@ router.get("/", async (req, res) => {
   const result = await Product.find({ isActive: true });
   res.json({ result: result });
 });
-
 
 module.exports = router;
