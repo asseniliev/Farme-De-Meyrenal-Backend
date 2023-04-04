@@ -111,7 +111,7 @@ router.post("/signup", async (req, res) => {
       text += "Follow the link below to finalize your signup!\n";
 
       // 6. Construct a url to be submitted by the user
-      text += `http://${process.env.IP}:3000/users/afirm?email=${newUser.email}&controlCode=${random}`;
+      text += `http://${process.env.IP}/users/afirm?email=${newUser.email}&controlCode=${random}`;
 
       // 7. Submits a mail to the user
       await sendMail(
