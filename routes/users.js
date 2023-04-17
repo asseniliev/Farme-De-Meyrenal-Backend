@@ -233,46 +233,48 @@ router.put("/:id", async (req, res) => {
   // req.body.deliveryAddress
   // req.body.password
 
+  console.log(req.body);
+
   // //1. Get user who must be updated
-  // let userToUpdate = await User.findById(req.params.id);
+  let userToUpdate = await User.findById(req.params.id);
 
-  // //2. Modify the fields according to the incoming request
-  // if (req.body.firstName)
-  //   userToUpdate.firstName = req.body.firstName;
+  //2. Modify the fields according to the incoming request
+  if (req.body.firstName)
+    userToUpdate.firstName = req.body.firstName;
 
-  // if (req.body.lastName)
-  //   userToUpdate.lastName = req.body.lastName;
+  if (req.body.lastName)
+    userToUpdate.lastName = req.body.lastName;
 
-  // if (req.body.phoneNumber)
-  //   userToUpdate.phoneNumber = req.body.phoneNumber;
+  if (req.body.phoneNumber)
+    userToUpdate.phoneNumber = req.body.phoneNumber;
 
-  // if (req.body.deliveryAddress)
-  //   userToUpdate.deliveryAddress = req.body.deliveryAddress;
+  if (req.body.deliveryAddress)
+    userToUpdate.deliveryAddress = req.body.deliveryAddress;
 
-  // if (req.body.password)
-  //   userToUpdate.password = bcrypt.hashSync(req.body.password, 10);
+  if (req.body.password)
+    userToUpdate.password = bcrypt.hashSync(req.body.password, 10);
 
-  // //3. Make the update in the database
-  // try {
+  //3. Make the update in the database
+  try {
 
-  //   const updatedUser = await User.updateOne(
-  //     { _id: req.params.id },
-  //     userToUpdate
-  //   );
+    const updatedUser = await User.updateOne(
+      { _id: req.params.id },
+      userToUpdate
+    );
 
-  //   if (updatedUser.matchedCount > 0) {
-  //     res.json({ result: true, user: userToUpdate });
-  //   } else {
-  //     res.json({
-  //       result: false,
-  //       message: "Something went wrong. User was not updated!",
-  //     });
-  //   }
-  // } catch (error) {
-  //   res.status(500).send("Internal Server Error");
-  // }
+    if (updatedUser.matchedCount > 0) {
+      res.json({ result: true, user: userToUpdate });
+    } else {
+      res.json({
+        result: false,
+        message: "Something went wrong. User was not updated!",
+      });
+    }
+  } catch (error) {
+    res.status(500).send("Internal Server Error");
+  }
 
-  res.json({ result: true });
+  //res.json({ result: true });
 });
 
 //===================================================================================================
