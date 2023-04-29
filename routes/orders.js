@@ -4,6 +4,79 @@ const { ObjectId } = require("mongodb");
 const Order = require("../models/order");
 
 //===================================================================================================
+// ROUTE http://localhost:3000/orders/:id/status
+// body {"status": "delivered"}
+// Search for the order by ID and replace the order status. 
+// Three possible statuses: "created" "confirmed" or "delivered".
+//===================================================================================================
+router.put('/:id/status', async (req, res) => {
+  const orderId = req.params.id;
+  const newStatus = req.body.status;
+
+  // Check if the new status is valid
+  if (!["created", "confirmed", "delivered"].includes(newStatus)) {
+    res.json({
+      result: false,
+      message: "Invalid status. Allowed values: created, confirmed, delivered",
+    });
+    return;
+  }
+
+  try {
+    const updatedOrder = await Order.findByIdAndUpdate(
+      { _id: orderId },
+      { status: newStatus },
+      { new: true }
+    );
+
+    if (updatedOrder) {
+      res.json({
+        result: true,
+        order: updatedOrder._id,
+        status: updatedOrder.status,
+      });
+    } else {
+      res.json({
+        result: false,
+        message: `Order ${orderId} not found`,
+      });
+    }
+  } catch (error) {
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+//===================================================================================================
+// ROUTE http://localhost:3000/orders/:id/isCancelled
+// Search for the order by ID and switch "isCancelled" to true
+//===================================================================================================
+router.put('/:id/isCancelled', async (req, res) => {
+  const orderId = req.params.id;
+    try {
+    const updatedOrder = await Order.findByIdAndUpdate(
+      { _id: orderId },
+      { isCancelled: true, status: "" },
+      { new: true },
+    );
+    if (updatedOrder) {
+      res.json({
+        result: true,
+        order: updatedOrder._id,
+        isCancelled: updatedOrder.isCancelled,
+        status: updatedOrder.status,
+      });
+    } else {
+      res.json({
+        result: false,
+        message: `Order ${orderId} not found`,
+      });
+    }
+  } catch (error) {
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+//===================================================================================================
 // ROUTE http://localhost:3000/orders
 // Create a new  order
 // 1. Construct the new order's number
@@ -62,6 +135,8 @@ router.post("/", async (req, res) => {
   }
 });
 
+
+
 //===================================================================================================
 // ROUTE http://localhost:3000/orders/{id}
 // Get an order by ID
@@ -113,6 +188,7 @@ router.get("/", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
+
 
 async function getLastNumber() {
   const result = await Order.aggregate([
