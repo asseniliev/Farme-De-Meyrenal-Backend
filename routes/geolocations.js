@@ -90,12 +90,17 @@ router.get("/contours", async (req, res) => {
   // Calculate the center of the map
   const latInit = (latMin + latMax) / 2;
   const lonInit = (lonMin + lonMax) / 2;
-
+  let latDelta = (Math.abs(latMax - latMin) + 0.05);
+  let lonDelta = Math.abs(lonMax - lonMin + 0.05);
+  latDelta = Math.round(latDelta * 100) / 100;
+  lonDelta = Math.round(lonDelta * 100) / 100;
 
   res.json({
     regionsData: regionsData,
     latInit: latInit,
     lonInit: lonInit,
+    latDelta: latDelta,
+    lonDelta: lonDelta
   });
 });
 

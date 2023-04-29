@@ -111,7 +111,7 @@ router.post("/signup", async (req, res) => {
       text += "Follow the link below to finalize your signup!\n";
 
       // 6. Construct a url to be submitted by the user
-      text += `http://${process.env.IP}:3000/users/afirm?email=${newUser.email}&controlCode=${random}`;
+      text += `http://${process.env.IP}/users/afirm?email=${newUser.email}&controlCode=${random}`;
 
       // 7. Submits a mail to the user
       await sendMail(
@@ -231,23 +231,39 @@ router.put("/:id", async (req, res) => {
   // req.body.lastName,
   // req.body.phoneNumber,
   // req.body.deliveryAddress
+  // req.body.password
 
+  console.log(req.body);
+
+  // //1. Get user who must be updated
+  let userToUpdate = await User.findById(req.params.id);
+
+  //2. Modify the fields according to the incoming request
+  if (req.body.firstName)
+    userToUpdate.firstName = req.body.firstName;
+
+  if (req.body.lastName)
+    userToUpdate.lastName = req.body.lastName;
+
+  if (req.body.phoneNumber)
+    userToUpdate.phoneNumber = req.body.phoneNumber;
+
+  if (req.body.deliveryAddress)
+    userToUpdate.deliveryAddress = req.body.deliveryAddress;
+
+  if (req.body.password)
+    userToUpdate.password = bcrypt.hashSync(req.body.password, 10);
+
+  //3. Make the update in the database
   try {
-    const userToUpdate = await User.updateOne(
+
+    const updatedUser = await User.updateOne(
       { _id: req.params.id },
-      {
-        password: bcrypt.hashSync(req.body.password, 10),
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        phoneNumber: req.body.phoneNumber,
-        deliveryAddress: req.body.deliveryAddress,
-      }
+      userToUpdate
     );
 
-    const updatedUser = await User.findById(req.params.id);
-
-    if (userToUpdate.matchedCount > 0) {
-      res.json({ result: true, user: updatedUser });
+    if (updatedUser.matchedCount > 0) {
+      res.json({ result: true, user: userToUpdate });
     } else {
       res.json({
         result: false,
@@ -257,6 +273,8 @@ router.put("/:id", async (req, res) => {
   } catch (error) {
     res.status(500).send("Internal Server Error");
   }
+
+  //res.json({ result: true });
 });
 
 //===================================================================================================
