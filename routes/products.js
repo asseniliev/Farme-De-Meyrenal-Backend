@@ -133,3 +133,14 @@ router.get("/", async (req, res) => {
 });
 
 module.exports = router;
+
+//===================================================================================================
+// ROUTE http://localhost:3000/products/all
+// Retrieve list of all products in the database (both active and inactive)
+//===================================================================================================
+router.get("/all", async (req, res) => {
+  const result = await Product.find();
+  res.json({ result: result });
+});
+
+module.exports = router;
