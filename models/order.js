@@ -9,6 +9,12 @@ const itemSchema = mongoose.Schema({
   priceUnit: String,
 });
 
+const paymentSchema = mongoose.Schema({
+  paymentMethod : String, // card / transfert / cash / cheque / creditNote / discount
+  paymentDate : Date,
+  amount : Number,
+});
+
 const orderSchema = mongoose.Schema({
   orderNumber: Number,
   user: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
@@ -17,7 +23,8 @@ const orderSchema = mongoose.Schema({
   items: [itemSchema],
   totalAmount: Number,
   status: String, // created / confirmed / delivred /
-  isPaid: Boolean,
+  payments: [paymentSchema],
+  leftToPay: Number,
   isCancelled: Boolean,
 });
 
