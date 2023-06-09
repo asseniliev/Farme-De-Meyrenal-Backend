@@ -18,7 +18,8 @@ const fs = require("fs");
 // 5. Construct data of the product to be created
 // 6. Create new document in the products collection
 //===================================================================================================
-router.post("/", authenticateToken, async (req, res) => {
+// router.post("/", authenticateToken, async (req, res) => {
+router.post("/", async (req, res) => {
   //router.post("/", async (req, res) => {
   // incoming data:
   // header: authorization -> Bearer eyJhbGciOiJIUzI.... (jwt key)
@@ -28,6 +29,9 @@ router.post("/", authenticateToken, async (req, res) => {
   // req.body.price -> price for the unit scale (10€ per 6 eggs)
   // req.body.unitScale -> scale for the price (per 1 Kg, per 500g, etc)
   // req.body.priceUnit -> the unit of measurement (kg, piece, ...)
+
+  const jsonData = JSON.parse(req.body.productData);
+  console.log(jsonData);
 
   try {
     // 2. Check if there is an existing active product
@@ -47,7 +51,8 @@ router.post("/", authenticateToken, async (req, res) => {
     // 3. Store temp file with the image
     const tempFileName = uniqid();
     const photoPath = `tmp/${tempFileName}.jpg`;
-    const resultMove = await req.files.photoFromFront.mv(photoPath);
+
+    const resultMove = await req.files.productPhoto.mv(photoPath);
 
     if (resultMove) {
       res.json({ result: false, error: resultCopy });
@@ -60,14 +65,16 @@ router.post("/", authenticateToken, async (req, res) => {
 
     // 5. Construct data of the product
     const newProduct = new Product({
-      title: req.body.title,
-      description: req.body.description,
+      title: jsonData.title,
+      description: jsonData.description,
       imageUrl: resultClaudinady.secure_url,
-      price: req.body.price,
-      unitScale: req.body.unitScale,
-      priceUnit: req.body.priceUnit,
+      price: jsonData.price,
+      unitScale: jsonData.unitScale,
+      priceUnit: jsonData.priceUnit,
       isActive: true,
     });
+
+    console.log(newProduct);
 
     // 6. Create new document in the collection
     const createdProduct = await newProduct.save();
@@ -129,6 +136,17 @@ router.put("/:id", async (req, res) => {
 //===================================================================================================
 router.get("/", async (req, res) => {
   const result = await Product.find({ isActive: true });
+  res.json({ result: result });
+});
+
+module.exports = router;
+
+//===================================================================================================
+// ROUTE http://localhost:3000/products/all
+// Retrieve list of all products in the database (both active and inactive)
+//===================================================================================================
+router.get("/all", async (req, res) => {
+  const result = await Product.find();
   res.json({ result: result });
 });
 
