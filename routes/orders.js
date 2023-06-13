@@ -192,7 +192,7 @@ router.get("/", async (req, res) => {
 
 //===================================================================================================
 // ROUTE http://localhost3000/orders/:id/payments
-// Route to modify an order and add one or more payments
+// Route to modify an order and add one payment
 //===================================================================================================
 router.put("/:id/payments", async (req, res) => {
   const id = req.params.id;
