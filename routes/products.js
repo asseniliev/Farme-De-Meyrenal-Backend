@@ -106,6 +106,7 @@ router.put("/:id", async (req, res) => {
   // req.body.imageUrl
   // req.body.price
   // req.body.isActive  - used to activate/deactivate the product
+  console.log(req.body);
   try {
     const productToUpdate = await Product.updateOne(
       { _id: req.params.id },
