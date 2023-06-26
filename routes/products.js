@@ -31,7 +31,6 @@ router.post("/", async (req, res) => {
   // req.body.priceUnit -> the unit of measurement (kg, piece, ...)
 
   const jsonData = JSON.parse(req.body.productData);
-  console.log(jsonData);
 
   try {
     // 2. Check if there is an existing active product
@@ -74,8 +73,6 @@ router.post("/", async (req, res) => {
       isActive: true,
     });
 
-    console.log(newProduct);
-
     // 6. Create new document in the collection
     const createdProduct = await newProduct.save();
     if (createdProduct.title === newProduct.title) {
@@ -106,14 +103,73 @@ router.put("/:id", async (req, res) => {
   // req.body.imageUrl
   // req.body.price
   // req.body.isActive  - used to activate/deactivate the product
+
+  const jsonData = JSON.parse(req.body.productData);
+  let imageUrl = jsonData.imageUrl;
+
+  if (req.files) {
+    // Store temp file with the image
+    const tempFileName = uniqid();
+    const photoPath = `tmp/${tempFileName}.jpg`;
+
+    const resultMove = await req.files.productPhoto.mv(photoPath);
+
+    if (resultMove) {
+      res.json({ result: false, error: resultCopy });
+      return;
+    }
+
+    //Upload the image in Claudinary
+    const resultClaudinady = await cloudinary.uploader.upload(photoPath);
+    fs.unlinkSync(photoPath);
+
+    imageUrl = resultClaudinady.secure_url;
+  }
+
+  try {
+    const productToUpdate = await Product.updateOne(
+      { _id: req.params.id },
+      {
+        description: jsonData.description,
+        imageUrl: imageUrl,
+        price: jsonData.price,
+        unitScale: jsonData.unitScale,
+        priceUnit: jsonData.priceUnit,
+        isActive: jsonData.isActive,
+      }
+    );
+
+    if (productToUpdate.matchedCount > 0) {
+      const updatedProduct = await Product.findOne({ _id: req.params.id });
+      res.json({ result: true, product: updatedProduct });
+    } else {
+      res.json({
+        result: false,
+        message: "Something went wrong. Product was not updated!",
+      });
+    }
+  } catch (error) {
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+//===================================================================================================
+// ROUTE http://localhost:3000/products/scope/{id}
+// Activate/deactivate product
+// 1. Checks if  jwt token is valid and if user is active. If yes - following steps take place
+// 2. Updates the product using the provided data
+//===================================================================================================
+
+router.put("/scope/:id", async (req, res) => {
+  // Incoming data:
+  // req.params.id  - product id
+  // req.body.isActive  - used to activate/deactivate the product
+  console.log("Req.body:");
   console.log(req.body);
   try {
     const productToUpdate = await Product.updateOne(
       { _id: req.params.id },
       {
-        description: req.body.description,
-        imageUrl: req.body.imageUrl,
-        price: req.body.price,
         isActive: req.body.isActive,
       }
     );
@@ -130,7 +186,6 @@ router.put("/:id", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
-
 
 //===================================================================================================
 // ROUTE http://localhost:3000/products/{id}
@@ -156,8 +211,6 @@ router.delete("/:id", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
-
-
 
 //===================================================================================================
 // ROUTE http://localhost:3000/products
@@ -188,7 +241,7 @@ router.get("/:id", async (req, res) => {
   if (data) {
     res.json({
       result: true,
-      data: data
+      data: data,
     });
   } else {
     res.json({
