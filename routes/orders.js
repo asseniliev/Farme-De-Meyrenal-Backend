@@ -271,6 +271,15 @@ router.delete('/:id/removePayments', async (req, res) => {
   }
 });
 
+//===================================================================================================
+// ROUTE http://localhost:3000/orders/:id/modifyOrder
+// Modifies the quantity of product per order
+//===================================================================================================
+// router.put('/:id/modifyOrder', async (req, res) => {
+//   const orderId = req.params.id;
+//   const newQuantity = req.body.status;
+
+// })
 
 async function getLastNumber() {
   const result = await Order.aggregate([
